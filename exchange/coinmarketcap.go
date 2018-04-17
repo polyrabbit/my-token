@@ -9,6 +9,7 @@ import (
 	"time"
 )
 
+// https://coinmarketcap.com/api/
 const coinmarketcapBaseApi = "https://api.coinmarketcap.com/v1/ticker/"
 
 type coinMarketCapClient struct {

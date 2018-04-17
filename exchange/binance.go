@@ -11,6 +11,7 @@ import (
 	"time"
 )
 
+// https://github.com/binance-exchange/binance-official-api-docs/blob/master/rest-api.md
 const binanceBaseApi = "https://api.binance.com"
 
 type binanceClient struct {
