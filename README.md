@@ -1,5 +1,10 @@
 # Token Ticker
 
+[![Build Status](https://travis-ci.org/polyrabbit/token-ticker.svg?branch=master)](https://travis-ci.org/polyrabbit/token-ticker)
+[![codecov](https://codecov.io/gh/polyrabbit/token-ticker/branch/master/graph/badge.svg)](https://codecov.io/gh/polyrabbit/token-ticker)
+[![License: MIT](https://img.shields.io/badge/License-MIT-brightgreen.svg)](https://opensource.org/licenses/MIT)
+[![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](https://github.com/polyrabbit/token-ticker/pulls)
+
 > Track token prices of your favorite exchanges in the terminal
 
 ![token-ticker](https://user-images.githubusercontent.com/2657334/38620004-0a04640e-3dd0-11e8-9708-00484845cdb9.png)

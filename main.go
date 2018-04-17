@@ -17,6 +17,8 @@ import (
 	"github.com/spf13/viper"
 )
 
+const Version = "0.1.0"
+
 type ExchangeClient interface {
 	GetName() string
 	GetSymbolPrice(string) (*SymbolPrice, error)
@@ -38,6 +40,9 @@ func requestSymbolPrice(client ExchangeClient, symbols []string) []chan *SymbolP
 			sp, err := client.GetSymbolPrice(symbol)
 			if err != nil {
 				logrus.Warnf("Failed to get symbol price for %s from %s, error: %s", symbol, client.GetName(), err)
+				if strings.Contains(err.Error(), "i/o timeout") {
+					logrus.Info("Maybe you are blocked by a firewall, try using --proxy to go through a proxy?")
+				}
 				close(done) // close channel to indicate an error has happened, any other good idea?
 			} else {
 				done <- sp
@@ -47,9 +52,8 @@ func requestSymbolPrice(client ExchangeClient, symbols []string) []chan *SymbolP
 	return waitingChans
 }
 
-const fontDim = 2
-
 func dimText(text string) string {
+	const fontDim = 2
 	return fmt.Sprintf("%s[%dm%s%s[%dm", tablewriter.ESC, fontDim, text, tablewriter.ESC, tablewriter.Normal)
 }
 
@@ -119,6 +123,7 @@ func showUsageAndExit() {
 	fmt.Fprintln(os.Stderr, "\nTrack token prices of your favorite exchanges in the terminal")
 	fmt.Fprintln(os.Stderr, "\nOptions:")
 	pflag.PrintDefaults()
+	fmt.Fprintln(os.Stderr, "\nFind updates from here - https://github.com/polyrabbit/token-ticker")
 	os.Exit(0)
 }
 
@@ -130,9 +135,11 @@ func init() {
 	}
 	logrus.SetFormatter(formatter)
 
+	showVersion := pflag.BoolP("version", "v", false, "Show version number")
 	showHelp := pflag.BoolP("help", "h", false, "Show usage message")
 	pflag.CommandLine.MarkHidden("help")
 	pflag.BoolP("debug", "d", false, "Enable debug mode")
+	pflag.StringP("exchange", "e", "CoinMarketCap", "Source to get token price")
 	pflag.IntP("refresh", "r", 0, "Auto refresh on every specified seconds, "+
 		"note every exchange has a rate limit, \ntoo frequent refresh may cause your IP banned by their servers")
 	var configFile string
@@ -148,6 +155,11 @@ func init() {
 
 	if *showHelp {
 		showUsageAndExit()
+	}
+
+	if *showVersion {
+		fmt.Fprintln(os.Stderr, Version)
+		os.Exit(0)
 	}
 
 	viper.BindPFlags(pflag.CommandLine)
@@ -208,9 +220,18 @@ func getSymbolPrice(exchanges []*exchangeConfig, httpClient *http.Client) []*Sym
 
 func main() {
 	var configs []*exchangeConfig
-	err := viper.UnmarshalKey("exchanges", &configs)
-	if err != nil {
-		logrus.Fatalf("Unable to decode config file, %v", err)
+
+	if pflag.NArg() != 0 {
+		// Construct exchange from command-line
+		configs = append(configs, &exchangeConfig{
+			Name:   viper.GetString("exchange"),
+			Tokens: pflag.Args()})
+	} else {
+		// Read from config file
+		err := viper.UnmarshalKey("exchanges", &configs)
+		if err != nil {
+			logrus.Fatalf("Unable to decode config file, %v", err)
+		}
 	}
 
 	refreshInterval := viper.GetInt("refresh")
