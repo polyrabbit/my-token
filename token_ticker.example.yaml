@@ -19,10 +19,12 @@ exchanges:
   tokens:
   ## Tokens supported by this exchange, note that different exchanges have different
   ## formats to denote their tokens/markets, refer to their URLs to find the format
-  - bitcoin
-- name: binance
-  tokens:
+  - Bitcoin
+  - Ethereum
+  - Litecoin
+#- name: binance
+#  tokens:
    ## Tokens in Binance are actually token-currency pairs
 # - BTCUSDT
 # - ETHUSDT
-  - EOSETH
+#  - EOSETH

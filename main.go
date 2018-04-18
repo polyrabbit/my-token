@@ -19,6 +19,8 @@ import (
 
 const Version = "0.1.0"
 
+var Rev = ""
+
 type ExchangeClient interface {
 	GetName() string
 	GetSymbolPrice(string) (*SymbolPrice, error)
@@ -120,10 +122,14 @@ func newHttpClient(rawProxyUrl string) *http.Client {
 
 func showUsageAndExit() {
 	// Print usage message and exit
+	fmt.Fprintf(os.Stderr, "\nUsage: %s [Options] [Token1 Token2 ...]\n", os.Args[0])
 	fmt.Fprintln(os.Stderr, "\nTrack token prices of your favorite exchanges in the terminal")
 	fmt.Fprintln(os.Stderr, "\nOptions:")
 	pflag.PrintDefaults()
-	fmt.Fprintln(os.Stderr, "\nFind updates from here - https://github.com/polyrabbit/token-ticker")
+	fmt.Fprintln(os.Stderr, "\nTokens:")
+	fmt.Fprintln(os.Stderr, "  Exchanges use many different forms to express tokens/symbols/markets, refer to their URLs to find the format"+
+		"\n  eg. to get BitCoin price you should query Bitfinex using \"BTCUSDT\" and \"Bitcoin\" for CoinMarketCap")
+	fmt.Fprintln(os.Stderr, "\nFind help/updates from here - https://github.com/polyrabbit/token-ticker")
 	os.Exit(0)
 }
 
@@ -158,7 +164,11 @@ func init() {
 	}
 
 	if *showVersion {
-		fmt.Fprintln(os.Stderr, Version)
+		fmt.Fprintf(os.Stderr, "Version %s", Version)
+		if Rev != "" { // Will be set by go-build
+			fmt.Fprintf(os.Stderr, ", build %s", Rev)
+		}
+		fmt.Fprintln(os.Stderr)
 		os.Exit(0)
 	}
 
@@ -176,11 +186,12 @@ func init() {
 	if err != nil {
 		switch err.(type) {
 		case viper.ConfigFileNotFoundError:
-			showUsageAndExit()
+			if pflag.NArg() == 0 { // And no specified tokens
+				showUsageAndExit()
+			}
 		default:
 			logrus.Warnf("Error reading config file: %s\n", err)
 		}
-		logrus.Warnf("Error reading config file: %s\n", err)
 	}
 	if viper.GetBool("debug") {
 		logrus.SetLevel(logrus.DebugLevel)
