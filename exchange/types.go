@@ -58,12 +58,14 @@ func CreateExchangeClient(exchangeName string, httpClient *http.Client) Exchange
 		return NewCoinmarketcapClient(httpClient)
 	case "BITFINEX":
 		return NewBitfinixClient(httpClient)
+	case "HUOBI":
+		return NewHuobiClient(httpClient)
 	}
 	return nil
 }
 
 func ListExchanges() []string {
-	supported := []string{"Binance", "CoinMarketCap", "Bitfinex"}
+	supported := []string{"Binance", "CoinMarketCap", "Bitfinex", "Huobi"}
 	sort.Strings(supported)
 	return supported
 }

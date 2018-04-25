@@ -16,7 +16,7 @@ after_success:
   - go get -u github.com/mitchellh/gox
   - go get -u github.com/tcnksm/ghr
 
-  - gox -output "binary/tokenticker_{{.OS}}_{{.Arch}}" -ldflags "-X main.Rev=`git rev-parse --short HEAD`" -verbose
+  - gox -output "binary/tt_{{.OS}}_{{.Arch}}" -ldflags "-X main.Rev=`git rev-parse --short HEAD`" -verbose
   - cp token_ticker.example.yaml binary
   - mkdir -p dist
   - for f in binary/*; do

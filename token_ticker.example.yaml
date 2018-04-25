@@ -31,3 +31,6 @@ exchanges:
 # - BTCUSDT
 # - ETHUSDT
 #  - EOSETH
+#- name: huobi
+#  tokens:
+#  - eoseth
