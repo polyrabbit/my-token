@@ -131,11 +131,11 @@ func (client *binanceClient) GetSymbolPrice(symbol string) (*SymbolPrice, error)
 	var percentChange1h float64
 	price1hAgo, err2 := client.GetPrice1hAgo(symbol)
 	if err2 != nil {
-		logrus.Warnf("Failed on GetPrice1hAgo, error: %s\n", err2)
+		logrus.Warnf("%s - Failed on GetPrice1hAgo, error: %s\n", client.GetName(), err2)
 	} else if price1hAgo != 0 {
 		currentPrice, err := strconv.ParseFloat(stat24h.LastPrice, 64)
 		if err != nil {
-			logrus.Warnf("Failed to convert current price %v to float", stat24h.LastPrice)
+			logrus.Warnf("%s - Failed to convert current price %v to float", client.GetName(), stat24h.LastPrice)
 		}
 		percentChange1h = (currentPrice - price1hAgo) / price1hAgo * 100
 	}

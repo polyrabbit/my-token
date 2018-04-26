@@ -7,11 +7,12 @@ before_script:
 
 script:
   - go test -v -race -coverprofile=coverage.txt -covermode=atomic ./...
+  - go run *.go -d -c token_ticker.example.yaml
 
 after_success:
   - bash <(curl -s https://codecov.io/bash)
 
-#before_deploy:
+before_deploy:
   - go get -u github.com/mattn/go-isatty
   - go get -u github.com/mitchellh/gox
   - go get -u github.com/tcnksm/ghr
@@ -25,7 +26,7 @@ after_success:
         tar zcvf "dist/$base.tar.gz" -C binary "$base" token_ticker.example.yaml;
       fi
     done
-  - ghr --username polyrabbit --token $GITHUB_TOKEN --replace -delete --prerelease --debug pre-release dist/
+#  - ghr --username polyrabbit --token $GITHUB_TOKEN --replace -delete --prerelease --debug pre-release dist/
 
 deploy:
   provider: releases

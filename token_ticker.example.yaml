@@ -20,17 +20,24 @@ exchanges:
   ## Tokens supported by this exchange, note that different exchanges have different
   ## formats to denote their tokens/markets, refer to their URLs to find the format
   - Bitcoin
-  - Ethereum
-  - Litecoin
+#  - Ethereum
+#  - Litecoin
+
 - name: bitfinex
   tokens:
   - btcusd
-#- name: binance
-#  tokens:
-   ## Tokens in Binance are actually token-currency pairs
-# - BTCUSDT
+
+- name: binance
+  tokens:
+  ## Tokens in Binance are actually token-currency pairs
+  - BTCUSDT
 # - ETHUSDT
 #  - EOSETH
-#- name: huobi
-#  tokens:
-#  - eoseth
+
+- name: huobi
+  tokens:
+  - eoseth
+
+- name: zb
+  tokens:
+  - ZB_QC

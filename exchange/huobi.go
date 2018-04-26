@@ -108,8 +108,7 @@ func (client *huobiClient) GetKlinePrice(symbol, period string, size int) (float
 }
 
 func (client *huobiClient) GetSymbolPrice(symbol string) (*SymbolPrice, error) {
-	symbol = strings.ToLower(symbol)
-	rawUrl := client.buildUrl("/market/trade", map[string]string{"symbol": symbol})
+	rawUrl := client.buildUrl("/market/trade", map[string]string{"symbol": strings.ToLower(symbol)})
 	resp, err := client.HTTPClient.Get(rawUrl)
 	if err != nil {
 		return nil, err
@@ -126,14 +125,14 @@ func (client *huobiClient) GetSymbolPrice(symbol string) (*SymbolPrice, error) {
 	var percentChange1h, percentChange24h float64
 	price1hAgo, err := client.GetKlinePrice(symbol, "1min", 60)
 	if err != nil {
-		logrus.Warnf("Failed to get price 1 hour ago, error: %v\n", err)
+		logrus.Warnf("%s - Failed to get price 1 hour ago, error: %v\n", client.GetName(), err)
 	} else if price1hAgo != 0 {
 		percentChange1h = (ticker.Price - price1hAgo) / price1hAgo * 100
 	}
 
 	price24hAgo, err := client.GetKlinePrice(symbol, "60min", 24)
 	if err != nil {
-		logrus.Warnf("Failed to get price 24 hour ago, error: %v\n", err)
+		logrus.Warnf("%s - Failed to get price 24 hours ago, error: %v\n", client.GetName(), err)
 	} else if price24hAgo != 0 {
 		percentChange24h = (ticker.Price - price24hAgo) / price24hAgo * 100
 	}
