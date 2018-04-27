@@ -60,7 +60,7 @@ type huobiCommonResponseProvider interface {
 	getCommonResponse() huobiCommonResponse
 }
 
-func NewHuobiClient(httpClient *http.Client) *huobiClient {
+func NewHuobiClient(httpClient *http.Client) ExchangeClient {
 	return &huobiClient{exchangeBaseClient: *newExchangeBase(huobiBaseApi, httpClient)}
 }
 
@@ -145,4 +145,8 @@ func (client *huobiClient) GetSymbolPrice(symbol string) (*SymbolPrice, error) {
 		PercentChange1h:  percentChange1h,
 		PercentChange24h: percentChange24h,
 	}, nil
+}
+
+func init() {
+	register((&huobiClient{}).GetName(), NewHuobiClient)
 }

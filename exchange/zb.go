@@ -51,7 +51,7 @@ type zbCommonResponseProvider interface {
 	getCommonResponse() zbCommonResponse
 }
 
-func NewZBClient(httpClient *http.Client) *zbClient {
+func NewZBClient(httpClient *http.Client) ExchangeClient {
 	return &zbClient{exchangeBaseClient: *newExchangeBase(zbBaseApi, httpClient)}
 }
 
@@ -137,4 +137,8 @@ func (client *zbClient) GetSymbolPrice(symbol string) (*SymbolPrice, error) {
 		PercentChange1h:  percentChange1h,
 		PercentChange24h: percentChange24h,
 	}, nil
+}
+
+func init() {
+	register((&zbClient{}).GetName(), NewZBClient)
 }

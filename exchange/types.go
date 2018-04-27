@@ -49,25 +49,42 @@ func (client *exchangeBaseClient) buildUrl(endpoint string, queryMap map[string]
 	return baseUrl.String()
 }
 
+type exchangeBuilder func(*http.Client) ExchangeClient
+
+var exchangeRegistry = make(map[string]exchangeBuilder)
+var officialExchangeNames []string
+
+func register(name string, builder exchangeBuilder) {
+	officialExchangeNames = append(officialExchangeNames, name)
+	exchangeRegistry[strings.ToUpper(name)] = builder
+}
+
 // Factory method to create exchange client
 func CreateExchangeClient(exchangeName string, httpClient *http.Client) ExchangeClient {
-	switch strings.ToUpper(exchangeName) {
-	case "BINANCE":
-		return NewBinanceClient(httpClient)
-	case "COINMARKETCAP":
-		return NewCoinmarketcapClient(httpClient)
-	case "BITFINEX":
-		return NewBitfinixClient(httpClient)
-	case "HUOBI":
-		return NewHuobiClient(httpClient)
-	case "ZB":
-		return NewZBClient(httpClient)
+	exchangeName = strings.ToUpper(exchangeName)
+	builder, ok := exchangeRegistry[exchangeName]
+	if ok {
+		return builder(httpClient)
 	}
 	return nil
+
+	// Following are more flexible
+	//switch strings.ToUpper(exchangeName) {
+	//case "BINANCE":
+	//	return NewBinanceClient(httpClient)
+	//case "COINMARKETCAP":
+	//	return NewCoinmarketcapClient(httpClient)
+	//case "BITFINEX":
+	//	return NewBitfinixClient(httpClient)
+	//case "HUOBI":
+	//	return NewHuobiClient(httpClient)
+	//case "ZB":
+	//	return NewZBClient(httpClient)
+	//}
+	//return nil
 }
 
 func ListExchanges() []string {
-	supported := []string{"Binance", "CoinMarketCap", "Bitfinex", "Huobi", "ZB"}
-	sort.Strings(supported)
-	return supported
+	sort.Strings(officialExchangeNames)
+	return officialExchangeNames
 }

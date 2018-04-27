@@ -15,7 +15,7 @@ type bitfinixClient struct {
 	innerClient *bitfinex.Client
 }
 
-func NewBitfinixClient(httpClient *http.Client) *bitfinixClient {
+func NewBitfinixClient(httpClient *http.Client) ExchangeClient {
 	http.DefaultClient = httpClient // luckily bitfinex uses the DefaultClient, override it here
 	client := bitfinex.NewClient()
 	return &bitfinixClient{innerClient: client}
@@ -87,4 +87,8 @@ func (client *bitfinixClient) GetSymbolPrice(symbol string) (*SymbolPrice, error
 		PercentChange1h:  percentChange1h,
 		PercentChange24h: percentChange24h,
 	}, nil
+}
+
+func init() {
+	register((&bitfinixClient{}).GetName(), NewBitfinixClient)
 }

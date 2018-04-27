@@ -42,7 +42,7 @@ type binance24hStatistics struct {
 	CloseTime          int64
 }
 
-func NewBinanceClient(httpClient *http.Client) *binanceClient {
+func NewBinanceClient(httpClient *http.Client) ExchangeClient {
 	return &binanceClient{exchangeBaseClient: *newExchangeBase(binanceBaseApi, httpClient)}
 }
 
@@ -148,4 +148,8 @@ func (client *binanceClient) GetSymbolPrice(symbol string) (*SymbolPrice, error)
 		PercentChange1h:  percentChange1h,
 		PercentChange24h: stat24h.PriceChangePercent,
 	}, nil
+}
+
+func init() {
+	register((&binanceClient{}).GetName(), NewBinanceClient)
 }

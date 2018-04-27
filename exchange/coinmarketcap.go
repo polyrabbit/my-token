@@ -40,7 +40,8 @@ type notFoundResponse struct {
 	Error string
 }
 
-func NewCoinmarketcapClient(httpClient *http.Client) *coinMarketCapClient {
+// I don't like returning a general type here, any other better way to use the factory pattern?
+func NewCoinmarketcapClient(httpClient *http.Client) ExchangeClient {
 	return &coinMarketCapClient{exchangeBaseClient: *newExchangeBase(coinmarketcapBaseApi, httpClient)}
 }
 
@@ -85,4 +86,8 @@ func (client *coinMarketCapClient) GetSymbolPrice(symbol string) (*SymbolPrice, 
 		UpdateAt:         time.Unix(token.LastUpdated, 0),
 		PercentChange1h:  token.PercentChange1h,
 		PercentChange24h: token.PercentChange24h}, nil
+}
+
+func init() {
+	register((&coinMarketCapClient{}).GetName(), NewCoinmarketcapClient)
 }
