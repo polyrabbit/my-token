@@ -60,7 +60,7 @@ type huobiCommonResponseProvider interface {
 	getCommonResponse() huobiCommonResponse
 }
 
-func NewHuobiClient(httpClient *http.Client) ExchangeClient {
+func NewHuobiClient(httpClient *http.Client) *huobiClient {
 	return &huobiClient{exchangeBaseClient: *newExchangeBase(huobiBaseApi, httpClient)}
 }
 
@@ -148,5 +148,8 @@ func (client *huobiClient) GetSymbolPrice(symbol string) (*SymbolPrice, error) {
 }
 
 func init() {
-	register((&huobiClient{}).GetName(), NewHuobiClient)
+	register((&huobiClient{}).GetName(), func(client *http.Client) ExchangeClient {
+		// Limited by type system in Go, I hate wrapper/adapter
+		return NewHuobiClient(client)
+	})
 }

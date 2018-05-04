@@ -4,6 +4,7 @@
 [![codecov](https://codecov.io/gh/polyrabbit/token-ticker/branch/master/graph/badge.svg)](https://codecov.io/gh/polyrabbit/token-ticker)
 [![License: MIT](https://img.shields.io/badge/License-MIT-brightgreen.svg)](https://opensource.org/licenses/MIT)
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](https://github.com/polyrabbit/token-ticker/pulls)
+[![Go Report Card](https://goreportcard.com/badge/github.com/polyrabbit/token-ticker)](https://goreportcard.com/report/github.com/polyrabbit/token-ticker)
 
 > Track token prices of your favorite exchanges in the terminal
 
@@ -27,7 +28,12 @@ Or download executable from the [release page](https://github.com/polyrabbit/tok
 ### Supported Exchanges
 
  * [Binance](https://www.binance.com/)
- * _adding more_
+ * [CoinMarketCap](https://coinmarketcap.com/)
+ * [Bitfinex](https://www.bitfinex.com/)
+ * [Huobi.pro](https://www.huobi.pro/)
+ * [ZB](https://www.zb.com/)
+ * [OKEx](https://www.okex.com/)
+ * _still adding..._
 
 ### Usage
 

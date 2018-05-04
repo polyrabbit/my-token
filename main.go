@@ -248,7 +248,10 @@ func main() {
 	}
 
 	httpClient := newHttpClient(viper.GetString("proxy"))
+
 	var writer = uilive.New()
+	logrus.SetOutput(writer)
+	defer logrus.SetOutput(os.Stderr)
 
 	for {
 		symbolPriceList := getSymbolPrice(configs, httpClient)

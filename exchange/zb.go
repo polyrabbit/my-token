@@ -14,6 +14,8 @@ import (
 // https://www.zb.com/i/developer
 const zbBaseApi = "http://api.zb.com/data/v1/"
 
+// ZB api is very similar to OKEx, who copied whom?
+
 type zbClient struct {
 	exchangeBaseClient
 	AccessKey string
@@ -51,7 +53,7 @@ type zbCommonResponseProvider interface {
 	getCommonResponse() zbCommonResponse
 }
 
-func NewZBClient(httpClient *http.Client) ExchangeClient {
+func NewZBClient(httpClient *http.Client) *zbClient {
 	return &zbClient{exchangeBaseClient: *newExchangeBase(zbBaseApi, httpClient)}
 }
 
@@ -140,5 +142,8 @@ func (client *zbClient) GetSymbolPrice(symbol string) (*SymbolPrice, error) {
 }
 
 func init() {
-	register((&zbClient{}).GetName(), NewZBClient)
+	register((&zbClient{}).GetName(), func(client *http.Client) ExchangeClient {
+		// Limited by type system in Go, I hate wrapper/adapter
+		return NewZBClient(client)
+	})
 }

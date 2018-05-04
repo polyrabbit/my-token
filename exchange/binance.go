@@ -42,7 +42,7 @@ type binance24hStatistics struct {
 	CloseTime          int64
 }
 
-func NewBinanceClient(httpClient *http.Client) ExchangeClient {
+func NewBinanceClient(httpClient *http.Client) *binanceClient {
 	return &binanceClient{exchangeBaseClient: *newExchangeBase(binanceBaseApi, httpClient)}
 }
 
@@ -151,5 +151,8 @@ func (client *binanceClient) GetSymbolPrice(symbol string) (*SymbolPrice, error)
 }
 
 func init() {
-	register((&binanceClient{}).GetName(), NewBinanceClient)
+	register((&binanceClient{}).GetName(), func(client *http.Client) ExchangeClient {
+		// Limited by type system in Go, I hate wrapper/adapter
+		return NewBinanceClient(client)
+	})
 }
