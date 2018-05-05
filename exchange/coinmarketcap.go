@@ -91,6 +91,6 @@ func (client *coinMarketCapClient) GetSymbolPrice(symbol string) (*SymbolPrice, 
 func init() {
 	register((&coinMarketCapClient{}).GetName(), func(client *http.Client) ExchangeClient {
 		// Limited by type system in Go, I hate wrapper/adapter
-		return NewBinanceClient(client)
+		return NewCoinmarketcapClient(client)
 	})
 }

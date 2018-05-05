@@ -46,3 +46,7 @@ exchanges:
 - name: OKEx
   tokens:
   - okb_usdt
+
+- name: Gate
+  tokens:
+  - btc_usdt

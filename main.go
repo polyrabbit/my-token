@@ -148,9 +148,9 @@ func init() {
 	pflag.StringVarP(&configFile, "config-file", "c", "", "Config file path, "+
 		"refer to \"token_ticker.example.yaml\" for the format, \nby default token-ticker uses \"token_ticker.yml\" "+
 		"in current directory or $HOME as config file")
-	pflag.StringP("proxy", "p", "", "Proxy used when sending HTTP request \nexample: "+
-		"\"http://localhost:7777\", \"https://localhost:7777\", \"socks5://localhost:1080\"")
-	pflag.Int("timeout", 0, "HTTP request timeout in seconds")
+	pflag.StringP("proxy", "p", "", "Proxy used when sending HTTP request \n(eg. "+
+		"\"http://localhost:7777\", \"https://localhost:7777\", \"socks5://localhost:1080\")")
+	pflag.IntP("timeout", "t", 20, "HTTP request timeout in seconds")
 	pflag.CommandLine.SortFlags = false
 	pflag.Usage = showUsageAndExit
 	pflag.Parse()
@@ -177,7 +177,6 @@ func init() {
 	}
 
 	viper.BindPFlags(pflag.CommandLine)
-	viper.SetDefault("timeout", 20)
 	// Set configure file
 	viper.SetConfigName("token_ticker") // name of config file (without extension)
 	viper.AddConfigPath(".")            // path to look for the config file in
