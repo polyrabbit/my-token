@@ -15,6 +15,7 @@ import (
 	"github.com/sirupsen/logrus"
 	"github.com/spf13/pflag"
 	"github.com/spf13/viper"
+	"math"
 )
 
 const Version = "0.1.0"
@@ -55,11 +56,13 @@ func dimText(text string) string {
 }
 
 func highlightChange(changePct float64) string {
-	if changePct == 0 {
+	if changePct == math.MaxFloat64 {
 		return ""
 	}
 	changeText := strconv.FormatFloat(changePct, 'f', 2, 64)
-	if changePct > 0 {
+	if changePct == 0 {
+		changeText = dimText("0")
+	} else if changePct > 0 {
 		changeText = fmt.Sprintf("%s[%dm%s%s[%dm", tablewriter.ESC, tablewriter.FgGreenColor,
 			changeText, tablewriter.ESC, tablewriter.Normal)
 	} else {

@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 	"errors"
 	"github.com/sirupsen/logrus"
-	"io"
+	"math"
 	"net/http"
 	"strconv"
 	"strings"
@@ -68,11 +68,13 @@ func (client *huobiClient) GetName() string {
 	return "Huobi"
 }
 
-func (client *huobiClient) decodeResponse(body io.ReadCloser, respJSON huobiCommonResponseProvider) error {
-	defer body.Close()
-
-	decoder := json.NewDecoder(body)
+func (client *huobiClient) decodeResponse(resp *http.Response, respJSON huobiCommonResponseProvider) error {
+	decoder := json.NewDecoder(resp.Body)
+	defer resp.Body.Close()
 	if err := decoder.Decode(&respJSON); err != nil {
+		if resp.StatusCode != 200 {
+			return errors.New(resp.Status)
+		}
 		return err
 	}
 
@@ -100,7 +102,7 @@ func (client *huobiClient) GetKlinePrice(symbol, period string, size int) (float
 	}
 
 	var respJSON huobiKlineResponse
-	err = client.decodeResponse(resp.Body, &respJSON)
+	err = client.decodeResponse(resp, &respJSON)
 	if err != nil {
 		return 0, err
 	}
@@ -115,14 +117,14 @@ func (client *huobiClient) GetSymbolPrice(symbol string) (*SymbolPrice, error) {
 	}
 
 	var respJSON huobiTickerResponse
-	err = client.decodeResponse(resp.Body, &respJSON)
+	err = client.decodeResponse(resp, &respJSON)
 	if err != nil {
 		return nil, err
 	}
 
 	ticker := respJSON.Tick.Data[len(respJSON.Tick.Data)-1] // Use the last one
 
-	var percentChange1h, percentChange24h float64
+	var percentChange1h, percentChange24h = math.MaxFloat64, math.MaxFloat64
 	price1hAgo, err := client.GetKlinePrice(symbol, "1min", 60)
 	if err != nil {
 		logrus.Warnf("%s - Failed to get price 1 hour ago, error: %v\n", client.GetName(), err)

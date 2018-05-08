@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"github.com/sirupsen/logrus"
+	"math"
 	"net/http"
 	"strconv"
 	"strings"
@@ -128,7 +129,7 @@ func (client *binanceClient) GetSymbolPrice(symbol string) (*SymbolPrice, error)
 		return nil, err
 	}
 
-	var percentChange1h float64
+	var percentChange1h = math.MaxFloat64
 	price1hAgo, err2 := client.GetPrice1hAgo(symbol)
 	if err2 != nil {
 		logrus.Warnf("%s - Failed on GetPrice1hAgo, error: %s\n", client.GetName(), err2)

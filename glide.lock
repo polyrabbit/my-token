@@ -1,15 +1,10 @@
-hash: baa45035a43d882c189b8c8791edd5952334fef6bb0b20a0108f0e97fe0bb8de
-updated: 2018-04-11T15:34:13.886504+08:00
+hash: 4820c9436a504a3a7b2a8a44ef73c58f2e04b10760d146b0d2549b6c0b07dafd
+updated: 2018-05-08T11:27:07.49738+08:00
 imports:
-- name: github.com/bitfinexcom/bitfinex-api-go
-  version: 0021a6a0b3e9bdaddd57a7146c9829367d9885ae
-  subpackages:
-  - utils
-  - v1
 - name: github.com/fsnotify/fsnotify
   version: c2828203cd70a50dcccfb2761f8b1f8ceef9a8e9
-- name: github.com/gorilla/websocket
-  version: eb925808374e5ca90c83401a40d711dc08c0c0f6
+- name: github.com/gosuri/uilive
+  version: ac356e6e42cd31fcef8e6aec13ae9ed6fe87713e
 - name: github.com/hashicorp/hcl
   version: ef8a98b0bbce4a65b5aa4c368430a80ddc533168
   subpackages:
@@ -24,14 +19,18 @@ imports:
   - json/token
 - name: github.com/magiconair/properties
   version: 2c9e9502788518c97fe44e8955cd069417ee89df
+- name: github.com/mattn/go-isatty
+  version: 6ca4dbf54d38eea1a992b3c722a76a5d1c4cb25c
 - name: github.com/mattn/go-runewidth
   version: ce7b0b5c7b45a81508558cd1dba6bb1e4ddb51bb
 - name: github.com/mitchellh/mapstructure
   version: 00c29f56e2386353d58c599509e8dc3801b0d716
 - name: github.com/olekukonko/tablewriter
-  version: b8a9be070da40449e501c3c4730a889e42d87a9e
+  version: d4647c9c7a84d847478d890b816b7d8b62b0b279
 - name: github.com/pelletier/go-toml
   version: 66540cf1fcd2c3aee6f6787dfa32a6ae9a870f12
+- name: github.com/pkg/errors
+  version: 816c9085562cd7ee03e7f8188a1cfd942858cded
 - name: github.com/sirupsen/logrus
   version: 778f2e774c725116edbc3d039dc0dfc1cc62aae8
 - name: github.com/spf13/afero
@@ -43,15 +42,15 @@ imports:
 - name: github.com/spf13/jwalterweatherman
   version: 7c0cea34c8ece3fbeb2b27ab9b59511d360fb394
 - name: github.com/spf13/pflag
-  version: 329ebf1e04800d11a25047832495199d366580f3
+  version: 583c0c0531f06d5278b7d917446061adc344b5cd
 - name: github.com/spf13/viper
   version: b5e8006cbee93ec955a89ab31e0e3ce3204f3736
 - name: golang.org/x/crypto
-  version: f70185d77e8278766928032ee1355e3da47e7181
+  version: 4ec37c66abab2c7e02ae775328b2ff001c3f025a
   subpackages:
   - ssh/terminal
 - name: golang.org/x/sys
-  version: 3b87a42e500a6dc65dae1a55d0b641295971163e
+  version: 7db1c3b1a98089d0071c84f646ff5c96aad43682
   subpackages:
   - unix
   - windows

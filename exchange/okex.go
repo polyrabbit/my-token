@@ -6,6 +6,7 @@ import (
 	"github.com/sirupsen/logrus"
 	"io"
 	"io/ioutil"
+	"math"
 	"net/http"
 	"strconv"
 	"strings"
@@ -128,7 +129,7 @@ func (client *okexClient) GetSymbolPrice(symbol string) (*SymbolPrice, error) {
 		return nil, err
 	}
 
-	var percentChange1h, percentChange24h float64
+	var percentChange1h, percentChange24h = math.MaxFloat64, math.MaxFloat64
 	price1hAgo, err := client.GetKlinePrice(symbol, "1min", 60)
 	if err != nil {
 		logrus.Warnf("%s - Failed to get price 1 hour ago, error: %v\n", client.GetName(), err)
