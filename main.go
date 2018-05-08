@@ -9,6 +9,7 @@ import (
 	"strings"
 	"time"
 
+	"encoding/json"
 	"github.com/gosuri/uilive"
 	"github.com/olekukonko/tablewriter"
 	. "github.com/polyrabbit/token-ticker/exchange"
@@ -18,8 +19,8 @@ import (
 	"math"
 )
 
-const Version = "0.1.0"
-
+// Will be set by go-build
+var Version = ""
 var Rev = ""
 
 type exchangeConfig struct {
@@ -48,6 +49,38 @@ func requestSymbolPrice(client ExchangeClient, symbols []string) []chan *SymbolP
 		}(symbol)
 	}
 	return waitingChans
+}
+
+func checkForUpdate(httpClient *http.Client) {
+	releaseUrl := "https://api.github.com/repos/polyrabbit/token-ticker/releases/latest"
+	resp, err := httpClient.Get(releaseUrl)
+	if err != nil {
+		logrus.Debugf("Failed to fetch Github release page, error %s", err)
+		return
+	}
+	defer resp.Body.Close()
+
+	decoder := json.NewDecoder(resp.Body)
+	var releaseJSON struct {
+		Tag string `json:"tag_name"`
+		Url string `json:"html_url"`
+	}
+	if err := decoder.Decode(&releaseJSON); err != nil {
+		logrus.Debugf("Failed to decode Github release page JSON, error %s", err)
+		return
+	}
+	if releaseJSON.Tag == "" {
+		logrus.Debugf("Get an empty release tag?")
+		return
+	}
+	releaseJSON.Tag = strings.TrimPrefix(releaseJSON.Tag, "v")
+	logrus.Debugf("Latest release tag is %s", releaseJSON.Tag)
+	if Version != "" && releaseJSON.Tag != Version {
+		fmt.Fprintf(os.Stderr, "%s[%dmYou are using version %s, however version %s is available.\n",
+			tablewriter.ESC, tablewriter.FgYellowColor, Version, releaseJSON.Tag)
+		fmt.Fprintf(os.Stderr, "You should consider getting the latest release from '%s'.\n%s[%dm",
+			releaseJSON.Url, tablewriter.ESC, tablewriter.Normal)
+	}
 }
 
 func dimText(text string) string {
@@ -164,7 +197,7 @@ func init() {
 
 	if *showVersion {
 		fmt.Fprintf(os.Stderr, "Version %s", Version)
-		if Rev != "" { // Will be set by go-build
+		if Rev != "" {
 			fmt.Fprintf(os.Stderr, ", build %s", Rev)
 		}
 		fmt.Fprintln(os.Stderr)
@@ -250,6 +283,8 @@ func main() {
 	}
 
 	httpClient := newHttpClient(viper.GetString("proxy"))
+
+	go checkForUpdate(httpClient)
 
 	var writer = uilive.New()
 	logrus.SetOutput(writer)
