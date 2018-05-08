@@ -91,12 +91,11 @@ func (client *huobiClient) decodeResponse(resp *http.Response, respJSON huobiCom
 
 func (client *huobiClient) GetKlinePrice(symbol, period string, size int) (float64, error) {
 	symbol = strings.ToLower(symbol)
-	rawUrl := client.buildUrl("/market/history/kline", map[string]string{
+	resp, err := client.httpGet("/market/history/kline", map[string]string{
 		"symbol": symbol,
 		"period": period,
 		"size":   strconv.Itoa(size),
 	})
-	resp, err := client.HTTPClient.Get(rawUrl)
 	if err != nil {
 		return 0, err
 	}
@@ -110,8 +109,7 @@ func (client *huobiClient) GetKlinePrice(symbol, period string, size int) (float
 }
 
 func (client *huobiClient) GetSymbolPrice(symbol string) (*SymbolPrice, error) {
-	rawUrl := client.buildUrl("/market/trade", map[string]string{"symbol": strings.ToLower(symbol)})
-	resp, err := client.HTTPClient.Get(rawUrl)
+	resp, err := client.httpGet("/market/trade", map[string]string{"symbol": strings.ToLower(symbol)})
 	if err != nil {
 		return nil, err
 	}

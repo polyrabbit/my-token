@@ -37,16 +37,25 @@ func newExchangeBase(rawUrl string, httpClient *http.Client) *exchangeBaseClient
 	return &exchangeBaseClient{baseUrl, httpClient}
 }
 
-func (client *exchangeBaseClient) buildUrl(endpoint string, queryMap map[string]string) string {
+func (client *exchangeBaseClient) httpGet(endpoint string, queryMap map[string]string) (*http.Response, error) {
+	// Build URL
 	baseUrl := *client.BaseURL
 	baseUrl.Path = path.Join(baseUrl.Path, endpoint)
 
-	query := url.Values{}
-	for k, v := range queryMap {
-		query.Set(k, v)
+	if queryMap != nil {
+		query := url.Values{}
+		for k, v := range queryMap {
+			query.Set(k, v)
+		}
+		baseUrl.RawQuery = query.Encode()
 	}
-	baseUrl.RawQuery = query.Encode()
-	return baseUrl.String()
+
+	req, err := http.NewRequest("GET", baseUrl.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+	req.Header.Set("User-Agent", "Mozilla/5.0 (compatible; token-ticker; +https://github.com/polyrabbit/token-ticker)")
+	return client.HTTPClient.Do(req)
 }
 
 type exchangeBuilder func(*http.Client) ExchangeClient

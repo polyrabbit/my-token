@@ -54,13 +54,12 @@ func (client *binanceClient) GetName() string {
 func (client *binanceClient) GetPrice1hAgo(symbol string) (float64, error) {
 	now := time.Now()
 	lastHour := now.Add(-1 * time.Hour)
-	rawUrl := client.buildUrl("/api/v1/klines", map[string]string{
+	resp, err := client.httpGet("/api/v1/klines", map[string]string{
 		"symbol":    strings.ToUpper(symbol),
 		"interval":  "1m",
 		"limit":     "1",
 		"startTime": strconv.FormatInt(lastHour.Unix()*1000, 10),
 	})
-	resp, err := client.HTTPClient.Get(rawUrl)
 	if err != nil {
 		return 0, err
 	}
@@ -85,8 +84,7 @@ func (client *binanceClient) Get24hStatistics(symbol string) (*binance24hStatist
 	// always return an empty response, so the caller doesn't need to handle error
 	var respJSON binance24hStatistics
 
-	rawUrl := client.buildUrl("/api/v1/ticker/24hr", map[string]string{"symbol": strings.ToUpper(symbol)})
-	resp, err := client.HTTPClient.Get(rawUrl)
+	resp, err := client.httpGet("/api/v1/ticker/24hr", map[string]string{"symbol": strings.ToUpper(symbol)})
 	if err != nil {
 		return &respJSON, err
 	}

@@ -78,11 +78,10 @@ func (client *gateClient) decodeResponse(body io.ReadCloser, respJSON gateCommon
 
 func (client *gateClient) GetKlinePrice(symbol string, groupedSeconds int, size int) (float64, error) {
 	symbol = strings.ToLower(symbol)
-	rawUrl := client.buildUrl("candlestick2/"+symbol, map[string]string{
+	resp, err := client.httpGet("candlestick2/"+symbol, map[string]string{
 		"group_sec":  strconv.Itoa(groupedSeconds),
 		"range_hour": strconv.Itoa(size),
 	})
-	resp, err := client.HTTPClient.Get(rawUrl)
 	if err != nil {
 		return 0, err
 	}
@@ -101,8 +100,7 @@ func (client *gateClient) GetKlinePrice(symbol string, groupedSeconds int, size 
 }
 
 func (client *gateClient) GetSymbolPrice(symbol string) (*SymbolPrice, error) {
-	rawUrl := client.buildUrl("ticker/"+symbol, map[string]string{})
-	resp, err := client.HTTPClient.Get(rawUrl)
+	resp, err := client.httpGet("ticker/"+symbol, map[string]string{})
 	if err != nil {
 		return nil, err
 	}

@@ -83,12 +83,11 @@ func (client *zbClient) decodeResponse(body io.ReadCloser, respJSON zbCommonResp
 
 func (client *zbClient) GetKlinePrice(symbol, period string, size int) (float64, error) {
 	symbol = strings.ToLower(symbol)
-	rawUrl := client.buildUrl("kline", map[string]string{
+	resp, err := client.httpGet("kline", map[string]string{
 		"market": symbol,
 		"type":   period,
 		"size":   strconv.Itoa(size),
 	})
-	resp, err := client.HTTPClient.Get(rawUrl)
 	if err != nil {
 		return 0, err
 	}
@@ -104,8 +103,7 @@ func (client *zbClient) GetKlinePrice(symbol, period string, size int) (float64,
 }
 
 func (client *zbClient) GetSymbolPrice(symbol string) (*SymbolPrice, error) {
-	rawUrl := client.buildUrl("ticker", map[string]string{"market": strings.ToLower(symbol)})
-	resp, err := client.HTTPClient.Get(rawUrl)
+	resp, err := client.httpGet("ticker", map[string]string{"market": strings.ToLower(symbol)})
 	if err != nil {
 		return nil, err
 	}

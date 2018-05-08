@@ -5,7 +5,6 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
-	"path"
 	"time"
 )
 
@@ -50,10 +49,7 @@ func (client *coinMarketCapClient) GetName() string {
 }
 
 func (client *coinMarketCapClient) GetSymbolPrice(symbol string) (*SymbolPrice, error) {
-	baseUrl := *client.BaseURL
-	baseUrl.Path = path.Join(baseUrl.Path, "/", symbol, "/")
-
-	resp, err := client.HTTPClient.Get(baseUrl.String())
+	resp, err := client.httpGet(symbol+"/", nil)
 	if err != nil {
 		return nil, err
 	}

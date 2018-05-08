@@ -96,12 +96,11 @@ func (client *okexClient) decodeResponse(body io.ReadCloser, respJSON okexCommon
 
 func (client *okexClient) GetKlinePrice(symbol, period string, size int) (float64, error) {
 	symbol = strings.ToLower(symbol)
-	rawUrl := client.buildUrl("kline.do", map[string]string{
+	resp, err := client.httpGet("kline.do", map[string]string{
 		"symbol": symbol,
 		"type":   period,
 		"size":   strconv.Itoa(size),
 	})
-	resp, err := client.HTTPClient.Get(rawUrl)
 	if err != nil {
 		return 0, err
 	}
@@ -117,8 +116,7 @@ func (client *okexClient) GetKlinePrice(symbol, period string, size int) (float6
 }
 
 func (client *okexClient) GetSymbolPrice(symbol string) (*SymbolPrice, error) {
-	rawUrl := client.buildUrl("ticker.do", map[string]string{"symbol": strings.ToLower(symbol)})
-	resp, err := client.HTTPClient.Get(rawUrl)
+	resp, err := client.httpGet("ticker.do", map[string]string{"symbol": strings.ToLower(symbol)})
 	if err != nil {
 		return nil, err
 	}

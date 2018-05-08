@@ -59,12 +59,11 @@ func (client *bitfinixClient) readResponse(resp *http.Response) ([]byte, error) 
 
 func (client *bitfinixClient) GetKlinePrice(symbol, frame string, start time.Time) (float64, error) {
 	candlePath := fmt.Sprintf("candles/trade:%s:t%s/hist", frame, symbol)
-	rawUrl := client.buildUrl(candlePath, map[string]string{
+	resp, err := client.httpGet(candlePath, map[string]string{
 		"start": strconv.FormatInt(start.Unix()*1000, 10),
 		"sort":  "1",
 		"limit": "1",
 	})
-	resp, err := client.HTTPClient.Get(rawUrl)
 	if err != nil {
 		return 0, err
 	}
@@ -82,8 +81,7 @@ func (client *bitfinixClient) GetKlinePrice(symbol, frame string, start time.Tim
 
 func (client *bitfinixClient) GetSymbolPrice(symbol string) (*SymbolPrice, error) {
 	symbol = strings.ToUpper(symbol)
-	rawUrl := client.buildUrl("ticker/t"+symbol, map[string]string{})
-	resp, err := client.HTTPClient.Get(rawUrl)
+	resp, err := client.httpGet("ticker/t"+symbol, nil)
 	if err != nil {
 		return nil, err
 	}
