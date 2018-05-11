@@ -50,3 +50,7 @@ exchanges:
 - name: Gate
   tokens:
   - btc_usdt
+
+- name: Bittrex
+  tokens:
+  - USDT-BTC

@@ -37,8 +37,7 @@ func newExchangeBase(rawUrl string, httpClient *http.Client) *exchangeBaseClient
 	return &exchangeBaseClient{baseUrl, httpClient}
 }
 
-func (client *exchangeBaseClient) httpGet(endpoint string, queryMap map[string]string) (*http.Response, error) {
-	// Build URL
+func (client *exchangeBaseClient) buildUrl(endpoint string, queryMap map[string]string) string {
 	baseUrl := *client.BaseURL
 	baseUrl.Path = path.Join(baseUrl.Path, endpoint)
 
@@ -49,12 +48,18 @@ func (client *exchangeBaseClient) httpGet(endpoint string, queryMap map[string]s
 		}
 		baseUrl.RawQuery = query.Encode()
 	}
+	return baseUrl.String()
+}
 
-	req, err := http.NewRequest("GET", baseUrl.String(), nil)
+func (client *exchangeBaseClient) httpGet(endpoint string, queryMap map[string]string) (*http.Response, error) {
+	req, err := http.NewRequest("GET", client.buildUrl(endpoint, queryMap), nil)
 	if err != nil {
 		return nil, err
 	}
 	req.Header.Set("User-Agent", "Mozilla/5.0 (compatible; token-ticker; +https://github.com/polyrabbit/token-ticker)")
+	req.Header.Set("Cache-Control", "no-cache")
+	req.Header.Add("Cache-Control", "no-store")
+	req.Header.Add("Cache-Control", "must-revalidate")
 	return client.HTTPClient.Do(req)
 }
 

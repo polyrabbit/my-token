@@ -158,7 +158,7 @@ func showUsageAndExit() {
 	fmt.Fprintln(os.Stderr, "\nOptions:")
 	pflag.PrintDefaults()
 	fmt.Fprintln(os.Stderr, "\nTokens:")
-	fmt.Fprintln(os.Stderr, "  Exchanges use many different forms to express tokens/symbols/markets, refer to their URLs to find the format"+
+	fmt.Fprintln(os.Stderr, "  Exchanges use many different forms to express tokens/symbols/currency pairs/markets, refer to their URLs to find the format"+
 		"\n  eg. to get BitCoin price you should query Bitfinex using \"BTCUSDT\" and \"Bitcoin\" for CoinMarketCap")
 	fmt.Fprintln(os.Stderr, "\nFind help/updates from here - https://github.com/polyrabbit/token-ticker")
 	os.Exit(0)

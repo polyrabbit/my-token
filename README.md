@@ -16,7 +16,7 @@ Track token prices in your favorite exchanges from the terminal. Best CLI tool f
 
  * Auto refresh on a specified interval, watch prices in live update mode
  * Proxy aware HTTP request, for easy access to blocked exchanges
- * Real-time prices from 7+ exchanges
+ * Real-time prices from 8+ exchanges
 
 ### Supported Exchanges
 
@@ -27,6 +27,7 @@ Track token prices in your favorite exchanges from the terminal. Best CLI tool f
  * [ZB](https://www.zb.com/)
  * [OKEx](https://www.okex.com/)
  * [gate.io](https://gate.io/)
+ * [Bittrex](https://bittrex.com/)
  * _still adding..._
  
 ### Installation
@@ -61,7 +62,7 @@ Options:
   -t, --timeout int          HTTP request timeout in seconds (default 20)
 
 Tokens:
-  Exchanges use many different forms to express tokens/symbols/markets, refer to their URLs to find the format
+  Exchanges use many different forms to express tokens/symbols/currency pairs/markets, refer to their URLs to find the format
   eg. to get BitCoin price you should query Bitfinex using "BTCUSDT" and "Bitcoin" for CoinMarketCap
 ```
 
