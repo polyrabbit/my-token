@@ -26,7 +26,7 @@ Track token prices in your favorite exchanges from the terminal. Best CLI tool f
  * [Huobi.pro](https://www.huobi.pro/)
  * [ZB](https://www.zb.com/)
  * [OKEx](https://www.okex.com/)
- * [gate.io](https://gate.io/)
+ * [Gate.io](https://gate.io/)
  * [Bittrex](https://bittrex.com/)
  * _still adding..._
  
@@ -44,7 +44,7 @@ Or download executable from the [release page](https://github.com/polyrabbit/tok
 ```
 $ tt --help
 
-Usage: tt [Options] [Token1 Token2 ...]
+Usage: tt [Options] [exchange1.token1 exchange2.token2 ...]
 
 Track token prices of your favorite exchanges in the terminal
 
@@ -63,7 +63,7 @@ Options:
 
 Tokens:
   Exchanges use many different forms to express tokens/symbols/currency pairs/markets, refer to their URLs to find the format
-  eg. to get BitCoin price you should query Bitfinex using "BTCUSDT" and "Bitcoin" for CoinMarketCap
+  eg. to get BitCoin price from CoinMarketCap and Binance you should use "CoinMarketCap.Bitcoin Binance.BTCUSDT"
 ```
 
 * #### Display latest market prices for for `BNBUSDT` and `BTCUSDT` from `Binance`
@@ -82,16 +82,22 @@ $ tt -r 10 -e binance BNBUSDT BTCUSDT
 
 NOTE: some exchanges has a strict rate limit, too frequent refresh may cause your IP banned by their servers.
 
-* #### Tired of typing a long and tedious CLI? save all your options in a config file and run from it
+* #### Run with options from a configuration file
 
 ```bash
 $ tt -c token_ticker.example.yaml
 ```
 
-Token-ticker can also read options from config file, see the attached [token_ticker.example.yaml](token_ticker.example.yaml) for its format. By default token-ticker searches config file `token_ticker.yml` in current directory and `$HOME`, so you can compose a `token_ticker.yml`, place it in your `$HOME` and just type `tt` to get all pre-defined prices. 
+Token-ticker can also read options from configuration file, see the attached [token_ticker.example.yaml](token_ticker.example.yaml) for its format. By default token-ticker searches configuration file `token_ticker.yml` in current directory and `$HOME`, so you can compose a `token_ticker.yml`, place it in your `$HOME` and just type `tt` to get all pre-defined prices. 
 
 ```bash
-# Token-ticker will search for config file "token_ticker.yml" in current directory and "$HOME" by default
+$ # Create your configuration file by copying attached `token_ticker.example.yaml` to `token_ticker.yaml`
+$ cp token_ticker.example.yaml token_ticker.yaml
+$ # Or copy to your $HOME directory
+$ cp token_ticker.example.yaml ~/token_ticker.yaml
+$
+$
+$ # Token-ticker will search for configuration file "token_ticker.yml" in current directory and "$HOME" by default
 $ tt       # <--- This is also the way I used most freqently 
 ```
 

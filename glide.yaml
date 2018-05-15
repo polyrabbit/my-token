@@ -5,3 +5,5 @@ import:
   version: ~1.0.2
 - package: github.com/sirupsen/logrus
 - package: github.com/spf13/pflag
+- package: github.com/fatih/color
+  version: ~1.6.0

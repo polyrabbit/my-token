@@ -10,6 +10,7 @@ import (
 	"time"
 
 	"encoding/json"
+	"github.com/fatih/color"
 	"github.com/gosuri/uilive"
 	"github.com/olekukonko/tablewriter"
 	. "github.com/polyrabbit/token-ticker/exchange"
@@ -20,8 +21,10 @@ import (
 )
 
 // Will be set by go-build
-var Version = ""
-var Rev = ""
+var (
+	Version string
+	Rev     string
+)
 
 type exchangeConfig struct {
 	Name   string
@@ -76,17 +79,16 @@ func checkForUpdate(httpClient *http.Client) {
 	releaseJSON.Tag = strings.TrimPrefix(releaseJSON.Tag, "v")
 	logrus.Debugf("Latest release tag is %s", releaseJSON.Tag)
 	if Version != "" && releaseJSON.Tag != Version {
-		fmt.Fprintf(os.Stderr, "%s[%dmYou are using version %s, however version %s is available.\n",
-			tablewriter.ESC, tablewriter.FgYellowColor, Version, releaseJSON.Tag)
-		fmt.Fprintf(os.Stderr, "You should consider getting the latest release from '%s'.\n%s[%dm",
-			releaseJSON.Url, tablewriter.ESC, tablewriter.Normal)
+		color.New(color.FgYellow).Fprintf(os.Stderr, "You are using version %s, however version %s is available.\n",
+			Version, releaseJSON.Tag)
+		color.New(color.FgYellow).Fprintf(os.Stderr, "You should consider getting the latest release from '%s'.\n",
+			releaseJSON.Url)
 	}
 }
 
-func dimText(text string) string {
-	const fontDim = 2
-	return fmt.Sprintf("%s[%dm%s%s[%dm", tablewriter.ESC, fontDim, text, tablewriter.ESC, tablewriter.Normal)
-}
+var (
+	faint = color.New(color.Faint).SprintFunc()
+)
 
 func highlightChange(changePct float64) string {
 	if changePct == math.MaxFloat64 {
@@ -94,13 +96,11 @@ func highlightChange(changePct float64) string {
 	}
 	changeText := strconv.FormatFloat(changePct, 'f', 2, 64)
 	if changePct == 0 {
-		changeText = dimText("0")
+		changeText = faint("0")
 	} else if changePct > 0 {
-		changeText = fmt.Sprintf("%s[%dm%s%s[%dm", tablewriter.ESC, tablewriter.FgGreenColor,
-			changeText, tablewriter.ESC, tablewriter.Normal)
+		changeText = color.GreenString(changeText)
 	} else {
-		changeText = fmt.Sprintf("%s[%dm%s%s[%dm", tablewriter.ESC, tablewriter.FgRedColor,
-			changeText, tablewriter.ESC, tablewriter.Normal)
+		changeText = color.RedString(changeText)
 	}
 	return changeText
 }
@@ -108,17 +108,16 @@ func highlightChange(changePct float64) string {
 func renderTable(symbolPriceList []*SymbolPrice, writer *uilive.Writer) {
 	// Set up ascii table writer
 	table := tablewriter.NewWriter(writer)
-	headers := []string{"Symbol", "Price", "%Change (1h)", "%Change (24h)", "Source", "Updated"}
+	table.SetAutoFormatHeaders(false)
+	table.SetAutoWrapText(false)
+	headers := []string{color.YellowString("Symbol"), color.YellowString("Price"),
+		color.YellowString("%Change(1h)"), color.YellowString("%Change(24h)"),
+		color.YellowString("Source"), color.YellowString("Updated")}
 	table.SetHeader(headers)
-	headerColors := make([]tablewriter.Colors, len(headers))
-	for i, _ := range headerColors {
-		headerColors[i] = tablewriter.Colors{tablewriter.FgYellowColor}
-	}
-	table.SetHeaderColor(headerColors...)
 	table.SetRowLine(true)
-	table.SetCenterSeparator(dimText("-"))
-	table.SetColumnSeparator(dimText("|"))
-	table.SetRowSeparator(dimText("-"))
+	table.SetCenterSeparator(faint("-"))
+	table.SetColumnSeparator(faint("|"))
+	table.SetRowSeparator(faint("-"))
 
 	// Fill in data
 	for _, sp := range symbolPriceList {
