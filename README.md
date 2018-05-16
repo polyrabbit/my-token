@@ -44,14 +44,13 @@ Or download executable from the [release page](https://github.com/polyrabbit/tok
 ```
 $ tt --help
 
-Usage: tt [Options] [exchange1.token1 exchange2.token2 ...]
+Usage: tt [Options] [Exchange1.Token1 Exchange2.Token2 ...]
 
 Track token prices of your favorite exchanges in the terminal
 
 Options:
   -v, --version              Show version number
   -d, --debug                Enable debug mode
-  -e, --exchange string      Source to get token price (default "CoinMarketCap")
   -l, --list-exchanges       List supported exchanges
   -r, --refresh int          Auto refresh on every specified seconds, note every exchange has a rate limit,
                              too frequent refresh may cause your IP banned by their servers
@@ -61,23 +60,24 @@ Options:
                              (eg. "http://localhost:7777", "https://localhost:7777", "socks5://localhost:1080")
   -t, --timeout int          HTTP request timeout in seconds (default 20)
 
-Tokens:
-  Exchanges use many different forms to express tokens/symbols/currency pairs/markets, refer to their URLs to find the format
-  eg. to get BitCoin price from CoinMarketCap and Binance you should use "CoinMarketCap.Bitcoin Binance.BTCUSDT"
+Exchange.Token Pairs:
+  Specify which exchange and token pair to query, different exchanges use different forms to express tokens, refer to their URLs to find the format, eg. to get BitCoin price from Bitfinex and CoinMarketCap you should use query string "Bitfinex.BTCUSDT CoinMarketCap.Bitcoin"
+
+Find help/updates from here - https://github.com/polyrabbit/token-ticker
 ```
 
-* #### Display latest market prices for for `BNBUSDT` and `BTCUSDT` from `Binance`
+* #### Display latest market prices for for `BNBUSDT`, `BTCUSDT` from `Binance` and `HTUSDT` from `Huobi`
 
 ```bash
-$ tt -e binance BNBUSDT BTCUSDT
+$ tt binance.BNBUSDT binance.BTCUSDT Huobi.HTUSDT
 ```
 
-Here `Binance` can be replaced by any supported exchanges, and different exchanges use different forms to express tokens/symbols/markets, refer to their URLs to find the format(eg. to get BitCoin price you should query Bitfinex using `BTCUSDT` and `Bitcoin` for CoinMarketCap).
+Here `Binance` and `Huobi` can be replaced by any supported exchanges, and different exchanges use different forms to express tokens/symbols/markets, refer to their URLs to find the format.
 
 * #### Auto-refresh on every 10 seconds
 
 ```bash
-$ tt -r 10 -e binance BNBUSDT BTCUSDT
+$ tt -r 10 binance.BNBUSDT binance.BTCUSDT Huobi.HTUSDT
 ```
 
 NOTE: some exchanges has a strict rate limit, too frequent refresh may cause your IP banned by their servers.

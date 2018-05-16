@@ -152,13 +152,13 @@ func newHttpClient(rawProxyUrl string) *http.Client {
 
 func showUsageAndExit() {
 	// Print usage message and exit
-	fmt.Fprintf(os.Stderr, "\nUsage: %s [Options] [Token1 Token2 ...]\n", os.Args[0])
+	fmt.Fprintf(os.Stderr, "\nUsage: %s [Options] [Exchange1.Token1 Exchange2.Token2 ...]\n", os.Args[0])
 	fmt.Fprintln(os.Stderr, "\nTrack token prices of your favorite exchanges in the terminal")
 	fmt.Fprintln(os.Stderr, "\nOptions:")
 	pflag.PrintDefaults()
-	fmt.Fprintln(os.Stderr, "\nTokens:")
-	fmt.Fprintln(os.Stderr, "  Exchanges use many different forms to express tokens/symbols/currency pairs/markets, refer to their URLs to find the format"+
-		"\n  eg. to get BitCoin price you should query Bitfinex using \"BTCUSDT\" and \"Bitcoin\" for CoinMarketCap")
+	fmt.Fprintln(os.Stderr, "\nExchange.Token Pairs:")
+	fmt.Fprintln(os.Stderr, "  Specify which exchange and token pair to query, different exchanges use different forms to express tokens, refer to their URLs to find the format"+
+		" (eg. to get BitCoin price from Bitfinex and CoinMarketCap you should use query string \"Bitfinex.BTCUSDT CoinMarketCap.Bitcoin\").")
 	fmt.Fprintln(os.Stderr, "\nFind help/updates from here - https://github.com/polyrabbit/token-ticker")
 	os.Exit(0)
 }
@@ -175,7 +175,6 @@ func init() {
 	showHelp := pflag.BoolP("help", "h", false, "Show usage message")
 	pflag.CommandLine.MarkHidden("help")
 	pflag.BoolP("debug", "d", false, "Enable debug mode")
-	pflag.StringP("exchange", "e", "CoinMarketCap", "Source to get token price")
 	showList := pflag.BoolP("list-exchanges", "l", false, "List supported exchanges")
 	pflag.IntP("refresh", "r", 0, "Auto refresh on every specified seconds, "+
 		"note every exchange has a rate limit, \ntoo frequent refresh may cause your IP banned by their servers")
@@ -260,14 +259,37 @@ func getSymbolPrice(exchanges []*exchangeConfig, httpClient *http.Client) []*Sym
 	return symbolPriceList
 }
 
+func buildExchangeFromCLI(cliArgs []string) []*exchangeConfig {
+	var (
+		lastExchangeDef = &exchangeConfig{}
+		exchangeList    []*exchangeConfig
+	)
+	for _, arg := range cliArgs {
+		tokenDef := strings.SplitN(arg, ".", 2)
+		if len(tokenDef) != 2 {
+			logrus.Fatalf("Unrecognized token definition - %s, expecting {exchange}.{token}", arg)
+		}
+		if lastExchangeDef.Name == tokenDef[0] {
+			// Merge consecutive exchange definitions
+			// Do not sort/reorder here, to remain the order user specified
+			lastExchangeDef.Tokens = append(lastExchangeDef.Tokens, tokenDef[1])
+		} else {
+			exchangeDef := &exchangeConfig{
+				Name:   tokenDef[0],
+				Tokens: []string{tokenDef[1]}}
+			lastExchangeDef = exchangeDef
+			exchangeList = append(exchangeList, exchangeDef)
+		}
+	}
+	return exchangeList
+}
+
 func main() {
 	var configs []*exchangeConfig
 
 	if pflag.NArg() != 0 {
 		// Construct exchange from command-line
-		configs = append(configs, &exchangeConfig{
-			Name:   viper.GetString("exchange"),
-			Tokens: pflag.Args()})
+		configs = buildExchangeFromCLI(pflag.Args())
 	} else {
 		// Read from config file
 		err := viper.UnmarshalKey("exchanges", &configs)
