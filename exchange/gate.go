@@ -36,7 +36,7 @@ type gateTickerResponse struct {
 
 type gateKlineResponse struct {
 	gateCommonResponse
-	Data [][]float64
+	Data [][]string
 }
 
 func (resp *gateTickerResponse) getCommonResponse() gateCommonResponse {
@@ -94,9 +94,13 @@ func (client *gateClient) GetKlinePrice(symbol string, groupedSeconds int, size 
 	if len(respJSON.Data) == 0 {
 		return 0, fmt.Errorf("%s - get a zero size kline response", client.GetName())
 	}
+	ts, err := strconv.ParseInt(respJSON.Data[0][0], 10, 64)
+	if err != nil {
+		return 0, err
+	}
 	logrus.Debugf("%s - Kline for %v hour(s) uses price at %s", client.GetName(), size,
-		time.Unix(int64(respJSON.Data[0][0])/1000, 0))
-	return respJSON.Data[0][5], nil
+		time.Unix(ts/1000, 0))
+	return strconv.ParseFloat(respJSON.Data[0][5], 64)
 }
 
 func (client *gateClient) GetSymbolPrice(symbol string) (*SymbolPrice, error) {
