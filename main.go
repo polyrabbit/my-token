@@ -12,6 +12,7 @@ import (
 	"encoding/json"
 	"github.com/fatih/color"
 	"github.com/gosuri/uilive"
+	"github.com/mattn/go-colorable"
 	"github.com/olekukonko/tablewriter"
 	. "github.com/polyrabbit/token-ticker/exchange"
 	"github.com/sirupsen/logrus"
@@ -157,7 +158,7 @@ func showUsageAndExit() {
 	fmt.Fprintln(os.Stderr, "\nOptions:")
 	pflag.PrintDefaults()
 	fmt.Fprintln(os.Stderr, "\nExchange.Token Pairs:")
-	fmt.Fprintln(os.Stderr, "  Specify which exchange and token pair to query, different exchanges use different forms to express tokens, refer to their URLs to find the format"+
+	fmt.Fprintln(os.Stderr, "  Specify which exchange and token pair to query, different exchanges use different forms to express tokens/trading pairs, refer to their URLs to find the format"+
 		" (eg. to get BitCoin price from Bitfinex and CoinMarketCap you should use query string \"Bitfinex.BTCUSDT CoinMarketCap.Bitcoin\").")
 	fmt.Fprintln(os.Stderr, "\nFind help/updates from here - https://github.com/polyrabbit/token-ticker")
 	os.Exit(0)
@@ -170,6 +171,7 @@ func init() {
 		TimestampFormat: "15:04:05",
 	}
 	logrus.SetFormatter(formatter)
+	logrus.SetOutput(colorable.NewColorableStderr()) // For Windows
 
 	showVersion := pflag.BoolP("version", "v", false, "Show version number")
 	showHelp := pflag.BoolP("help", "h", false, "Show usage message")
@@ -308,8 +310,9 @@ func main() {
 	go checkForUpdate(httpClient)
 
 	var writer = uilive.New()
+	writer.Out = colorable.NewColorableStdout() // For Windows
 	logrus.SetOutput(writer)
-	defer logrus.SetOutput(os.Stderr)
+	defer logrus.SetOutput(colorable.NewColorableStderr())
 
 	for {
 		symbolPriceList := getSymbolPrice(configs, httpClient)

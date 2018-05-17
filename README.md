@@ -34,10 +34,10 @@ Track token prices in your favorite exchanges from the terminal. Best CLI tool f
 
 If you have [Go](https://golang.org/) (1.9+) installed:
 ```bash
-$ go get github.com/polyrabbit/token-ticker
+$ go get -u github.com/polyrabbit/token-ticker
 ```
 
-Or download executable from the [release page](https://github.com/polyrabbit/token-ticker/releases/latest) 
+Or download executable from the [release page](https://github.com/polyrabbit/token-ticker/releases/latest), and put it into your `PATH`.
 
 ### Usage
 
@@ -61,7 +61,7 @@ Options:
   -t, --timeout int          HTTP request timeout in seconds (default 20)
 
 Exchange.Token Pairs:
-  Specify which exchange and token pair to query, different exchanges use different forms to express tokens, refer to their URLs to find the format, eg. to get BitCoin price from Bitfinex and CoinMarketCap you should use query string "Bitfinex.BTCUSDT CoinMarketCap.Bitcoin"
+  Specify which exchange and token pair to query, different exchanges use different forms to express tokens/trading pairs, refer to their URLs to find the format, eg. to get BitCoin price from Bitfinex and CoinMarketCap you should use query string "Bitfinex.BTCUSDT CoinMarketCap.Bitcoin"
 
 Find help/updates from here - https://github.com/polyrabbit/token-ticker
 ```
