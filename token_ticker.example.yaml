@@ -15,7 +15,7 @@
 
 exchanges:
 ## Exchanges are identified by name, following are supported exchanges
-- name: coinmarketcap
+- name: CoinMarketCap
   tokens:
   ## Tokens supported by this exchange, note that different exchanges have different
   ## formats to denote their tokens/markets, refer to their URLs to find the format
@@ -23,11 +23,11 @@ exchanges:
 #  - Ethereum
 #  - Litecoin
 
-- name: bitfinex
+- name: Bitfinex
   tokens:
   - btcusd
 
-- name: binance
+- name: Binance
   tokens:
   ## Tokens in Binance are actually token-currency pairs
   - BNBUSDT
@@ -35,11 +35,11 @@ exchanges:
 # - ETHUSDT
 #  - EOSETH
 
-- name: huobi
+- name: Huobi
   tokens:
   - HTUSDT
 
-- name: zb
+- name: ZB
   tokens:
   - ZB_QC
 
@@ -54,3 +54,7 @@ exchanges:
 - name: Bittrex
   tokens:
   - USDT-BTC
+
+- name: HitBTC
+  tokens:
+  - BTCUSD

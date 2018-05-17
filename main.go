@@ -123,7 +123,7 @@ func renderTable(symbolPriceList []*SymbolPrice, writer *uilive.Writer) {
 	// Fill in data
 	for _, sp := range symbolPriceList {
 		table.Append([]string{sp.Symbol, sp.Price, highlightChange(sp.PercentChange1h),
-			highlightChange(sp.PercentChange24h), sp.Source, sp.UpdateAt.Format("15:04:05")})
+			highlightChange(sp.PercentChange24h), sp.Source, sp.UpdateAt.Local().Format("15:04:05")})
 	}
 
 	table.Render()

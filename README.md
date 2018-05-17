@@ -8,7 +8,7 @@
 
 > NEVER LEAVE YOUR TERMINAL
 
-![token-ticker](https://user-images.githubusercontent.com/2657334/38620004-0a04640e-3dd0-11e8-9708-00484845cdb9.png)
+![token-ticker](https://user-images.githubusercontent.com/2657334/40175207-ff9e6504-5a09-11e8-9a3d-a887ebc4895a.png)
 
 Track token prices in your favorite exchanges from the terminal. Best CLI tool for those who are both **Crypto investors** and **Engineers**.
 
@@ -16,7 +16,7 @@ Track token prices in your favorite exchanges from the terminal. Best CLI tool f
 
  * Auto refresh on a specified interval, watch prices in live update mode
  * Proxy aware HTTP request, for easy access to blocked exchanges
- * Real-time prices from 8+ exchanges
+ * Real-time prices from 9+ exchanges
 
 ### Supported Exchanges
 
@@ -28,6 +28,7 @@ Track token prices in your favorite exchanges from the terminal. Best CLI tool f
  * [OKEx](https://www.okex.com/)
  * [Gate.io](https://gate.io/)
  * [Bittrex](https://bittrex.com/)
+ * [HitBTC](https://hitbtc.com/)
  * _still adding..._
  
 ### Installation
