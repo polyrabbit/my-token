@@ -10,13 +10,13 @@
 
 ![token-ticker](https://user-images.githubusercontent.com/2657334/40175207-ff9e6504-5a09-11e8-9a3d-a887ebc4895a.png)
 
-Track token prices in your favorite exchanges from the terminal. Best CLI tool for those who are both **Crypto investors** and **Engineers**.
+Token-ticker (or `tt` for short) is a CLI tool for those who are both **Crypto investors** and **Engineers**, allowing you to track token prices and changes in your favorite exchanges on the terminal.
 
 ### Features
 
  * Auto refresh on a specified interval, watch prices in live update mode
  * Proxy aware HTTP request, for easy access to blocked exchanges
- * Real-time prices from 9+ exchanges
+ * Real-time prices from 10+ exchanges
 
 ### Supported Exchanges
 
@@ -29,16 +29,24 @@ Track token prices in your favorite exchanges from the terminal. Best CLI tool f
  * [Gate.io](https://gate.io/)
  * [Bittrex](https://bittrex.com/)
  * [HitBTC](https://hitbtc.com/)
+ * [BigONE](https://big.one/)
  * _still adding..._
  
 ### Installation
 
-If you have [Go](https://golang.org/) (1.9+) installed:
+#### Homebrew
+
+```bash
+# work in process 
+```
+
+#### Using [Go](https://golang.org/) (1.9+)
 ```bash
 $ go get -u github.com/polyrabbit/token-ticker
 ```
 
-Or download executable from the [release page](https://github.com/polyrabbit/token-ticker/releases/latest), and put it into your `PATH`.
+#### Manually
+Download from [release page](https://github.com/polyrabbit/token-ticker/releases/latest) and extact the tarbal into /usr/bin or your `PATH` directory.
 
 ### Usage
 

@@ -140,7 +140,7 @@ func (client *binanceClient) GetSymbolPrice(symbol string) (*SymbolPrice, error)
 	}
 
 	return &SymbolPrice{
-		Symbol:           stat24h.Symbol,
+		Symbol:           symbol,
 		Price:            stat24h.LastPrice,
 		UpdateAt:         time.Unix(stat24h.CloseTime/1000, 0),
 		Source:           client.GetName(),

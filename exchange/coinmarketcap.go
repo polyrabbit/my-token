@@ -76,7 +76,7 @@ func (client *coinMarketCapClient) GetSymbolPrice(symbol string) (*SymbolPrice, 
 	token := tokens[0]
 
 	return &SymbolPrice{
-		Symbol:           symbol,
+		Symbol:           token.Symbol,
 		Price:            token.PriceUSD,
 		Source:           client.GetName(),
 		UpdateAt:         time.Unix(token.LastUpdated, 0),

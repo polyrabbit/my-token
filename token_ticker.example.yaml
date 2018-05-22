@@ -58,3 +58,7 @@ exchanges:
 - name: HitBTC
   tokens:
   - BTCUSD
+
+- name: BigONE
+  tokens:
+  - BIG-BTC
