@@ -40,6 +40,11 @@ Token-ticker (or `tt` for short) is a CLI tool for those who are both **Crypto i
 # work in process 
 ```
 
+#### `curl | bash` style downloads to `/usr/local/bin`
+```bash
+$ curl -sfL https://raw.githubusercontent.com/polyrabbit/token-ticker/master/install.sh | bash -s -- -d -b /usr/local/bin
+```
+
 #### Using [Go](https://golang.org/) (1.9+)
 ```bash
 $ go get -u github.com/polyrabbit/token-ticker
