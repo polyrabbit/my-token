@@ -17,13 +17,14 @@ before_deploy:
   - go get -u github.com/mitchellh/gox
   - go get -u github.com/tcnksm/ghr
 
-  - gox -output "binary/tt_{{.OS}}_{{.Arch}}" -ldflags "-X main.Rev=`git rev-parse --short HEAD` -X main.Version=`git describe --tags | cut -dv -f 2`" -verbose
+  - gox -output "binary/tt_{{.OS}}_{{.Arch}}/tt" -ldflags "-X main.Rev=`git rev-parse --short HEAD` -X main.Version=`git describe --tags | cut -dv -f 2`" -verbose
   - cp token_ticker.example.yaml binary
   - mkdir -p dist
   - for f in binary/*; do
-      if [[ -f "$f" && -x "$f" ]]; then
+      if [[ -d "$f" ]]; then
+        cp token_ticker.example.yaml "$f";
         base=$(basename "$f");
-        tar zcvf "dist/$base.tar.gz" -C binary "$base" token_ticker.example.yaml;
+        tar zcvf "dist/$base.tar.gz" -C "$f" .;
       fi
     done
 #  - ghr --username polyrabbit --token $GITHUB_TOKEN --replace -delete --prerelease --debug pre-release dist/
