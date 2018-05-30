@@ -1,6 +1,8 @@
-hash: e1c79b10a606bd4f499aee643f8d7060df5616a87a3495cde55fba50f353df88
-updated: 2018-05-15T13:30:18.504454+08:00
+hash: ec9732a8041de317982a06ca7dcfcab329368517297fc896c675c05c7c952c44
+updated: 2018-05-30T23:18:13.725899+08:00
 imports:
+- name: github.com/buger/jsonparser
+  version: 2cac668e8456b4284edb0715e17e2af02d3ec993
 - name: github.com/fatih/color
   version: 507f6050b8568533fb3f5504de8e5205fa62a114
 - name: github.com/fsnotify/fsnotify

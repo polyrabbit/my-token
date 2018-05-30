@@ -16,7 +16,7 @@ Token-ticker (or `tt` for short) is a CLI tool for those who are both **Crypto i
 
  * Auto refresh on a specified interval, watch prices in live update mode
  * Proxy aware HTTP request, for easy access to blocked exchanges
- * Real-time prices from 11+ exchanges
+ * Real-time prices from 12+ exchanges
 
 ### Supported Exchanges
 
@@ -31,6 +31,7 @@ Token-ticker (or `tt` for short) is a CLI tool for those who are both **Crypto i
  * [HitBTC](https://hitbtc.com/)
  * [BigONE](https://big.one/)
  * [Poloniex](https://poloniex.com/)
+ * [Kraken](https://www.kraken.com/)
  * _still adding..._
  
 ### Installation

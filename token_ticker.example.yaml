@@ -66,3 +66,7 @@ exchanges:
 - name: Poloniex
   tokens:
   - BTC_ETH
+
+- name: Kraken
+  tokens:
+  - EOSETH
