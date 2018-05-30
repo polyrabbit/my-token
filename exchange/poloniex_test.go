@@ -6,12 +6,12 @@ import (
 	"time"
 )
 
-func TestZBClient(t *testing.T) {
+func TestPoloniexClient(t *testing.T) {
 
-	var client = NewZBClient(http.DefaultClient)
+	var client = NewPoloniexClient(http.DefaultClient)
 
 	t.Run("GetKlinePrice", func(t *testing.T) {
-		_, err := client.GetKlinePrice("bTC_usdt", "1min", 60)
+		_, err := client.GetKlinePrice("BTC_ETh", time.Now().Add(-1*time.Hour), 300)
 
 		if err != nil {
 			t.Fatalf("Unexpected error: %v", err)
@@ -19,8 +19,7 @@ func TestZBClient(t *testing.T) {
 	})
 
 	t.Run("GetKlinePrice of unknown symbol", func(t *testing.T) {
-		time.Sleep(time.Second * 1)
-		_, err := client.GetKlinePrice("abcedfg", "1min", 60)
+		_, err := client.GetKlinePrice("abcedfg", time.Now().Add(-1*time.Hour), 300)
 
 		if err == nil {
 			t.Fatalf("Expecting error when fetching unknown price, but get nil")
@@ -29,7 +28,7 @@ func TestZBClient(t *testing.T) {
 	})
 
 	t.Run("GetSymbolPrice", func(t *testing.T) {
-		sp, err := client.GetSymbolPrice("bTC_usdt")
+		sp, err := client.GetSymbolPrice("BTC_ETh")
 
 		if err != nil {
 			t.Fatalf("Unexpected error: %v", err)

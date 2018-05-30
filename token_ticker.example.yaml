@@ -62,3 +62,7 @@ exchanges:
 - name: BigONE
   tokens:
   - BIG-BTC
+
+- name: Poloniex
+  tokens:
+  - BTC_ETH
