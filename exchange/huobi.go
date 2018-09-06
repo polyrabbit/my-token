@@ -3,12 +3,13 @@ package exchange
 import (
 	"encoding/json"
 	"errors"
-	"github.com/sirupsen/logrus"
 	"math"
 	"net/http"
 	"strconv"
 	"strings"
 	"time"
+
+	"github.com/sirupsen/logrus"
 )
 
 // https://github.com/huobiapi/API_Docs/wiki/REST_api_reference
@@ -47,7 +48,7 @@ func (resp *huobiTickerResponse) getCommonResponse() huobiCommonResponse {
 type huobiKlineResponse struct {
 	huobiCommonResponse
 	Data []struct {
-		Open float64
+		Open interface{}
 	}
 }
 
@@ -105,7 +106,14 @@ func (client *huobiClient) GetKlinePrice(symbol, period string, size int) (float
 	if err != nil {
 		return 0, err
 	}
-	return respJSON.Data[len(respJSON.Data)-1].Open, nil
+	var open float64
+	if r, ok := respJSON.Data[len(respJSON.Data)-1].Open.(float64); ok {
+		open = r
+	}
+	if r, ok := respJSON.Data[len(respJSON.Data)-1].Open.(string); ok {
+		open, _ = strconv.ParseFloat(r, 64)
+	}
+	return open, nil
 }
 
 func (client *huobiClient) GetSymbolPrice(symbol string) (*SymbolPrice, error) {
