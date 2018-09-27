@@ -29,7 +29,7 @@ Token-ticker (or `tt` for short) is a CLI tool for those who are both **Crypto i
  * [Gate.io](https://gate.io/)
  * [Bittrex](https://bittrex.com/)
  * [HitBTC](https://hitbtc.com/)
- * [BigONE](https://big.one/)
+ * ~~[BigONE](https://big.one/)~~
  * [Poloniex](https://poloniex.com/)
  * [Kraken](https://www.kraken.com/)
  * _still adding..._

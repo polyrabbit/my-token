@@ -7,6 +7,8 @@ import (
 
 func TestBigOneClient(t *testing.T) {
 
+	t.Skip("No longer supports BigOne, as they don't have a stable api.")
+
 	var client = NewBigOneClient(http.DefaultClient)
 
 	t.Run("GetSymbolPrice", func(t *testing.T) {

@@ -147,8 +147,9 @@ func (client *bigOneClient) GetSymbolPrice(symbol string) (*SymbolPrice, error) 
 }
 
 func init() {
-	register((&bigOneClient{}).GetName(), func(client *http.Client) ExchangeClient {
-		// Limited by type system in Go, I hate wrapper/adapter
-		return NewBigOneClient(client)
-	})
+	// No longer supports BigOne, as they don't have a stable api.
+	//register((&bigOneClient{}).GetName(), func(client *http.Client) ExchangeClient {
+	//	// Limited by type system in Go, I hate wrapper/adapter
+	//	return NewBigOneClient(client)
+	//})
 }
