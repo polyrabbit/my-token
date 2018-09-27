@@ -3,7 +3,9 @@ language: go
 go:
   - stable
 
-before_script:
+install:
+  - go get -v github.com/Masterminds/glide
+  - glide install
 
 script:
   - go test -v -race -coverprofile=coverage.txt -covermode=atomic ./...

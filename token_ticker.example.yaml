@@ -68,9 +68,9 @@ exchanges:
   tokens:
   - BTCUSD
 
-- name: BigONE
-  tokens:
-  - BIG-BTC
+#- name: BigONE
+#  tokens:
+#  - BIG-BTC
 
 - name: Poloniex
   tokens:

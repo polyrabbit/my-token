@@ -89,9 +89,7 @@ func checkForUpdate(httpClient *http.Client) {
 	releaseJSON.Tag = strings.TrimPrefix(releaseJSON.Tag, "v")
 	logrus.Debugf("Latest release tag is %s", releaseJSON.Tag)
 	if Version != "" && releaseJSON.Tag != Version {
-		color.New(color.FgYellow).Fprintf(os.Stderr, "You are using version %s, however version %s is available.\n",
-			Version, releaseJSON.Tag)
-		color.New(color.FgYellow).Fprintf(os.Stderr, "You should consider getting the latest release from '%s'.\n",
+		color.New(color.FgYellow).Fprintf(os.Stderr, "A new version is available at \"%s\".\n",
 			releaseJSON.Url)
 	}
 }
