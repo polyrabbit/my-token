@@ -135,7 +135,7 @@ func (client *okexClient) GetSymbolPrice(symbol string) (*SymbolPrice, error) {
 		percentChange1h = (respJSON.Ticker.Last - price1hAgo) / price1hAgo * 100
 	}
 
-	time.Sleep(time.Second)                                       // ZB limits 1 req/sec for Kline
+	time.Sleep(time.Second)                                       // Limit 1 req/sec for Kline
 	price24hAgo, err := client.GetKlinePrice(symbol, "3min", 492) // Why not 480?
 	if err != nil {
 		logrus.Warnf("%s - Failed to get price 24 hours ago, error: %v\n", client.GetName(), err)

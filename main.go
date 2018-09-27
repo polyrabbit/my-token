@@ -27,6 +27,15 @@ var (
 	Rev     string
 )
 
+const (
+	colSymbol       = "Symbol"
+	colPrice        = "Price"
+	colChange1hPct  = "%Change(1h)"
+	colChange24hPct = "%Change(24h)"
+	colSource       = "Source"
+	colUpdated      = "Updated"
+)
+
 type exchangeConfig struct {
 	Name   string
 	Tokens []string
@@ -111,10 +120,12 @@ func renderTable(symbolPriceList []*SymbolPrice, writer *uilive.Writer) {
 	table := tablewriter.NewWriter(writer)
 	table.SetAutoFormatHeaders(false)
 	table.SetAutoWrapText(false)
-	headers := []string{color.YellowString("Symbol"), color.YellowString("Price"),
-		color.YellowString("%Change(1h)"), color.YellowString("%Change(24h)"),
-		color.YellowString("Source"), color.YellowString("Updated")}
-	table.SetHeader(headers)
+	headers := viper.GetStringSlice("show")
+	formattedHeaders := make([]string, len(headers))
+	for i, hdr := range headers {
+		formattedHeaders[i] = color.YellowString(hdr)
+	}
+	table.SetHeader(formattedHeaders)
 	table.SetRowLine(true)
 	table.SetCenterSeparator(faint("-"))
 	table.SetColumnSeparator(faint("|"))
@@ -122,8 +133,28 @@ func renderTable(symbolPriceList []*SymbolPrice, writer *uilive.Writer) {
 
 	// Fill in data
 	for _, sp := range symbolPriceList {
-		table.Append([]string{sp.Symbol, sp.Price, highlightChange(sp.PercentChange1h),
-			highlightChange(sp.PercentChange24h), sp.Source, sp.UpdateAt.Local().Format("15:04:05")})
+		var columns []string
+		for _, hdr := range headers {
+			switch strings.ToLower(hdr) {
+			case strings.ToLower(colSymbol):
+				columns = append(columns, sp.Symbol)
+			case strings.ToLower(colPrice):
+				columns = append(columns, sp.Price)
+			case strings.ToLower(colChange1hPct):
+				columns = append(columns, highlightChange(sp.PercentChange1h))
+			case strings.ToLower(colChange24hPct):
+				columns = append(columns, highlightChange(sp.PercentChange24h))
+			case strings.ToLower(colSource):
+				columns = append(columns, sp.Source)
+			case strings.ToLower(colUpdated):
+				columns = append(columns, sp.UpdateAt.Local().Format("15:04:05"))
+			default:
+				fmt.Fprintf(os.Stderr, "Unknown column: %s\n", hdr)
+				os.Exit(1)
+			}
+
+		}
+		table.Append(columns)
 	}
 
 	table.Render()
@@ -177,13 +208,15 @@ func init() {
 	showHelp := pflag.BoolP("help", "h", false, "Show usage message")
 	pflag.CommandLine.MarkHidden("help")
 	pflag.BoolP("debug", "d", false, "Enable debug mode")
-	showList := pflag.BoolP("list-exchanges", "l", false, "List supported exchanges")
+	showExchanges := pflag.BoolP("list-exchanges", "l", false, "List supported exchanges")
 	pflag.IntP("refresh", "r", 0, "Auto refresh on every specified seconds, "+
 		"note every exchange has a rate limit, \ntoo frequent refresh may cause your IP banned by their servers")
 	var configFile string
 	pflag.StringVarP(&configFile, "config-file", "c", "", "Config file path, "+
 		"refer to \"token_ticker.example.yaml\" for the format, \nby default token-ticker uses \"token_ticker.yml\" "+
 		"in current directory or $HOME as config file")
+	pflag.StringSliceP("show", "s", []string{colSymbol, colPrice, colChange1hPct, colChange24hPct, colSource, colUpdated},
+		"Only show comma-separated columns")
 	pflag.StringP("proxy", "p", "", "Proxy used when sending HTTP request \n(eg. "+
 		"\"http://localhost:7777\", \"https://localhost:7777\", \"socks5://localhost:1080\")")
 	pflag.IntP("timeout", "t", 20, "HTTP request timeout in seconds")
@@ -204,7 +237,7 @@ func init() {
 		os.Exit(0)
 	}
 
-	if *showList {
+	if *showExchanges {
 		fmt.Fprintln(os.Stderr, "Supported exchanges:")
 		for _, name := range ListExchanges() {
 			fmt.Fprintf(os.Stderr, " %s\n", name)

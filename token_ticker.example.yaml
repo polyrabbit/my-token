@@ -13,6 +13,15 @@
 ## Running in debug mode
 # debug: true
 
+# Specify columns to show
+# show:
+# - Symbol
+# - Price
+# - "%Change(1h)"
+# - "%Change(24h)"
+# - Source
+# - Updated
+
 exchanges:
 ## Exchanges are identified by name, following are supported exchanges
 - name: CoinMarketCap

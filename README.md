@@ -72,6 +72,7 @@ Options:
                              too frequent refresh may cause your IP banned by their servers
   -c, --config-file string   Config file path, refer to "token_ticker.example.yaml" for the format,
                              by default token-ticker uses "token_ticker.yml" in current directory or $HOME as config file
+  -s, --show strings         Only show comma-separated columns (default [Symbol,Price,%Change(1h),%Change(24h),Source,Updated])
   -p, --proxy string         Proxy used when sending HTTP request
                              (eg. "http://localhost:7777", "https://localhost:7777", "socks5://localhost:1080")
   -t, --timeout int          HTTP request timeout in seconds (default 20)
