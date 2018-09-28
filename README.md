@@ -99,6 +99,14 @@ $ tt -r 10 binance.BNBUSDT binance.BTCUSDT Huobi.HTUSDT
 
 NOTE: some exchanges has a strict rate limit, too frequent refresh may cause your IP banned by their servers.
 
+* #### Show specified columns only
+
+```bash
+$ tt -s=Symbol,Price binance.BTCUSDT
+```
+
+See issue [#3](https://github.com/polyrabbit/token-ticker/issues/3) for a discussion on this feature.
+
 * #### Run with options from a configuration file
 
 ```bash
