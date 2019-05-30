@@ -39,7 +39,7 @@ Token-ticker (or `tt` for short) is a CLI tool for those who are both **Crypto i
 #### Homebrew
 
 ```bash
-# work in process 
+# WIP
 ```
 
 #### `curl | bash` style downloads to `/usr/local/bin`
@@ -47,7 +47,7 @@ Token-ticker (or `tt` for short) is a CLI tool for those who are both **Crypto i
 $ curl -sfL https://raw.githubusercontent.com/polyrabbit/token-ticker/master/install.sh | bash -s -- -d -b /usr/local/bin
 ```
 
-#### Using [Go](https://golang.org/) (1.9+)
+#### Using [Go](https://golang.org/) (1.11+)
 ```bash
 $ go get -u github.com/polyrabbit/token-ticker
 ```
@@ -102,7 +102,7 @@ NOTE: some exchanges has a strict rate limit, too frequent refresh may cause you
 * #### Show specified columns only
 
 ```bash
-$ tt -s=Symbol,Price binance.BTCUSDT
+$ tt --show Symbol,Price binance.BTCUSDT
 ```
 
 See issue [#3](https://github.com/polyrabbit/token-ticker/issues/3) for a discussion on this feature.

@@ -3,9 +3,13 @@ language: go
 go:
   - stable
 
-install:
-  - go get -v github.com/Masterminds/glide
-  - glide install
+env:
+  - GO111MODULE=on
+
+#os:
+#  - osx
+#  - linux
+#  - windows
 
 script:
   - go test -v -race -coverprofile=coverage.txt -covermode=atomic ./...
