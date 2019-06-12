@@ -32,6 +32,7 @@ Token-ticker (or `tt` for short) is a CLI tool for those who are both **Crypto i
  * ~~[BigONE](https://big.one/)~~
  * [Poloniex](https://poloniex.com/)
  * [Kraken](https://www.kraken.com/)
+ * [Coinbase](https://www.coinbase.com/)
  * _still adding..._
  
 ### Installation

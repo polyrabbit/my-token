@@ -13,5 +13,6 @@
 
 # Prject configuration by Goland
 .idea/
+.vscode/
 
 vendor/

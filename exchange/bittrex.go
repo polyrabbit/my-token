@@ -8,6 +8,7 @@ import (
 	"math"
 	"net/http"
 	"net/url"
+	"sort"
 	"strconv"
 	"strings"
 	"time"
@@ -145,6 +146,9 @@ func (client *bittrexClient) GetSymbolPrice(symbol string) (*SymbolPrice, error)
 		logrus.Warnf("%s - Failed to get kline ticks, error: %v", client.GetName(), err)
 	} else {
 		now := time.Now()
+		sort.Slice(klineResp.Result, func(i, j int) bool {
+			return klineResp.Result[i].Timestamp < klineResp.Result[j].Timestamp
+		})
 
 		lastHour := now.Add(-1 * time.Hour)
 		price1hAgo, err := client.GetPriceRightAfter(klineResp, lastHour)

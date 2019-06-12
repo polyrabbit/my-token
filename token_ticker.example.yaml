@@ -79,3 +79,7 @@ exchanges:
 - name: Kraken
   tokens:
   - EOSETH
+
+- name: Coinbase
+  tokens:
+  - BTC-USD

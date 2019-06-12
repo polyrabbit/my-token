@@ -1,4 +1,4 @@
-module token-ticker
+module github.com/polyrabbit/token-ticker
 
 require (
 	github.com/BurntSushi/toml v0.3.1 // indirect
@@ -17,7 +17,7 @@ require (
 	github.com/onsi/gomega v1.5.0 // indirect
 	github.com/pelletier/go-toml v0.0.0-20180323185243-66540cf1fcd2 // indirect
 	github.com/pkg/errors v0.0.0-20180311214515-816c9085562c
-	github.com/polyrabbit/token-ticker v0.3.0
+	github.com/preichenberger/go-coinbasepro/v2 v2.0.4
 	github.com/sirupsen/logrus v0.0.0-20180515044140-bde08903c767
 	github.com/spf13/afero v0.0.0-20180401205752-63644898a8da // indirect
 	github.com/spf13/cast v0.0.0-20180214174949-8965335b8c71 // indirect
@@ -25,7 +25,8 @@ require (
 	github.com/spf13/pflag v0.0.0-20180412120913-583c0c0531f0
 	github.com/spf13/viper v0.0.0-20180319185019-b5e8006cbee9
 	github.com/stretchr/testify v1.3.0 // indirect
-	golang.org/x/crypto v0.0.0-20180515001509-1a580b3eff78 // indirect
+	golang.org/x/net v0.0.0-20190311183353-d8887717615a // indirect
+	golang.org/x/sync v0.0.0-20190423024810-112230192c58 // indirect
 	gopkg.in/airbrake/gobrake.v2 v2.0.9 // indirect
 	gopkg.in/gemnasium/logrus-airbrake-hook.v2 v2.1.2 // indirect
 )
