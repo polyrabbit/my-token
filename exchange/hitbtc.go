@@ -3,12 +3,15 @@ package exchange
 import (
 	"encoding/json"
 	"errors"
-	"github.com/sirupsen/logrus"
 	"math"
-	"net/http"
 	"strconv"
 	"strings"
 	"time"
+
+	"github.com/polyrabbit/token-ticker/exchange/model"
+
+	"github.com/polyrabbit/token-ticker/http"
+	"github.com/sirupsen/logrus"
 )
 
 // https://api.hitbtc.com/#market-data
@@ -17,7 +20,6 @@ const hitBtcBaseApi = "https://api.hitbtc.com/api/2/"
 // ZB api is very similar to OKEx, who copied whom?
 
 type hitBtcClient struct {
-	exchangeBaseClient
 	AccessKey string
 	SecretKey string
 }
@@ -56,22 +58,12 @@ type hitBtcCommonResponseProvider interface {
 	getCommonResponse() hitBtcCommonResponse
 }
 
-func NewHitBtcClient(httpClient *http.Client) *hitBtcClient {
-	return &hitBtcClient{exchangeBaseClient: *newExchangeBase(hitBtcBaseApi, httpClient)}
-}
-
 func (client *hitBtcClient) GetName() string {
 	return "HitBTC"
 }
 
-func (client *hitBtcClient) decodeResponse(resp *http.Response, respJSON hitBtcCommonResponseProvider) error {
-	defer resp.Body.Close()
-
-	decoder := json.NewDecoder(resp.Body)
-	if err := decoder.Decode(&respJSON); err != nil {
-		if resp.StatusCode != 200 {
-			return errors.New(resp.Status)
-		}
+func (client *hitBtcClient) decodeResponse(respBytes []byte, respJSON hitBtcCommonResponseProvider) error {
+	if err := json.Unmarshal(respBytes, respJSON); err != nil {
 		return err
 	}
 
@@ -84,8 +76,7 @@ func (client *hitBtcClient) decodeResponse(resp *http.Response, respJSON hitBtcC
 }
 
 func (client *hitBtcClient) GetKlinePrice(symbol, period string, limit int) (float64, error) {
-	symbol = strings.ToLower(symbol)
-	resp, err := client.httpGet("public/candles/"+strings.ToUpper(symbol), map[string]string{
+	respBytes, err := http.Get(hitBtcBaseApi+"public/candles/"+strings.ToUpper(symbol), map[string]string{
 		"period": period,
 		"limit":  strconv.Itoa(limit),
 	})
@@ -93,32 +84,22 @@ func (client *hitBtcClient) GetKlinePrice(symbol, period string, limit int) (flo
 		return 0, err
 	}
 
-	if resp.StatusCode != 200 {
-		var respJSON hitBtcKlineResponse
-		return 0, client.decodeResponse(resp, &respJSON)
-	}
 	var respJSON []hitBtcKlineResponse
-	defer resp.Body.Close()
-
-	decoder := json.NewDecoder(resp.Body)
-	if err := decoder.Decode(&respJSON); err != nil {
-		if resp.StatusCode != 200 {
-			return 0, errors.New(resp.Status)
-		}
+	if err := json.Unmarshal(respBytes, &respJSON); err != nil {
 		return 0, err
 	}
 	logrus.Debugf("%s - Kline for %s*%v uses price at %s", client.GetName(), period, limit, respJSON[0].Timestamp)
 	return respJSON[0].Open, nil
 }
 
-func (client *hitBtcClient) GetSymbolPrice(symbol string) (*SymbolPrice, error) {
-	resp, err := client.httpGet("/public/ticker/"+strings.ToUpper(symbol), nil)
+func (client *hitBtcClient) GetSymbolPrice(symbol string) (*model.SymbolPrice, error) {
+	respBytes, err := http.Get(hitBtcBaseApi+"public/ticker/"+strings.ToUpper(symbol), nil)
 	if err != nil {
 		return nil, err
 	}
 
 	var respJSON hitBtcTickerResponse
-	err = client.decodeResponse(resp, &respJSON)
+	err = client.decodeResponse(respBytes, &respJSON)
 	if err != nil {
 		return nil, err
 	}
@@ -141,7 +122,7 @@ func (client *hitBtcClient) GetSymbolPrice(symbol string) (*SymbolPrice, error) 
 	price24hAgo := respJSON.Open
 	percentChange24h = (respJSON.Last - price24hAgo) / price24hAgo * 100
 
-	return &SymbolPrice{
+	return &model.SymbolPrice{
 		Symbol:           symbol,
 		Price:            strconv.FormatFloat(respJSON.Last, 'f', -1, 64),
 		UpdateAt:         updated,
@@ -152,8 +133,5 @@ func (client *hitBtcClient) GetSymbolPrice(symbol string) (*SymbolPrice, error) 
 }
 
 func init() {
-	register((&hitBtcClient{}).GetName(), func(client *http.Client) ExchangeClient {
-		// Limited by type system in Go, I hate wrapper/adapter
-		return NewHitBtcClient(client)
-	})
+	model.Register(new(hitBtcClient))
 }

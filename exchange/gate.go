@@ -4,22 +4,21 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"github.com/sirupsen/logrus"
-	"io"
 	"math"
-	"net/http"
 	"strconv"
 	"strings"
 	"time"
+
+	"github.com/polyrabbit/token-ticker/exchange/model"
+
+	"github.com/polyrabbit/token-ticker/http"
+	"github.com/sirupsen/logrus"
 )
 
 // https://www.zb.com/i/developer
 const gateBaseApi = "http://data.gateio.io/api2/1/"
 
-// ZB api is very similar to OKEx, who copied whom?
-
 type gateClient struct {
-	exchangeBaseClient
 	AccessKey string
 	SecretKey string
 }
@@ -52,19 +51,12 @@ type gateCommonResponseProvider interface {
 	getCommonResponse() gateCommonResponse
 }
 
-func NewGateClient(httpClient *http.Client) *gateClient {
-	return &gateClient{exchangeBaseClient: *newExchangeBase(gateBaseApi, httpClient)}
-}
-
 func (client *gateClient) GetName() string {
 	return "Gate"
 }
 
-func (client *gateClient) decodeResponse(body io.ReadCloser, respJSON gateCommonResponseProvider) error {
-	defer body.Close()
-
-	decoder := json.NewDecoder(body)
-	if err := decoder.Decode(&respJSON); err != nil {
+func (client *gateClient) decodeResponse(respBytes []byte, respJSON gateCommonResponseProvider) error {
+	if err := json.Unmarshal(respBytes, respJSON); err != nil {
 		return err
 	}
 
@@ -78,7 +70,7 @@ func (client *gateClient) decodeResponse(body io.ReadCloser, respJSON gateCommon
 
 func (client *gateClient) GetKlinePrice(symbol string, groupedSeconds int, size int) (float64, error) {
 	symbol = strings.ToLower(symbol)
-	resp, err := client.httpGet("candlestick2/"+symbol, map[string]string{
+	respBytes, err := http.Get(gateBaseApi+"candlestick2/"+symbol, map[string]string{
 		"group_sec":  strconv.Itoa(groupedSeconds),
 		"range_hour": strconv.Itoa(size),
 	})
@@ -87,7 +79,7 @@ func (client *gateClient) GetKlinePrice(symbol string, groupedSeconds int, size 
 	}
 
 	var respJSON gateKlineResponse
-	err = client.decodeResponse(resp.Body, &respJSON)
+	err = client.decodeResponse(respBytes, &respJSON)
 	if err != nil {
 		return 0, err
 	}
@@ -103,14 +95,14 @@ func (client *gateClient) GetKlinePrice(symbol string, groupedSeconds int, size 
 	return strconv.ParseFloat(respJSON.Data[0][5], 64)
 }
 
-func (client *gateClient) GetSymbolPrice(symbol string) (*SymbolPrice, error) {
-	resp, err := client.httpGet("ticker/"+symbol, map[string]string{})
+func (client *gateClient) GetSymbolPrice(symbol string) (*model.SymbolPrice, error) {
+	respBytes, err := http.Get(gateBaseApi+"ticker/"+symbol, nil)
 	if err != nil {
 		return nil, err
 	}
 
 	var respJSON gateTickerResponse
-	err = client.decodeResponse(resp.Body, &respJSON)
+	err = client.decodeResponse(respBytes, &respJSON)
 	if err != nil {
 		return nil, err
 	}
@@ -130,7 +122,7 @@ func (client *gateClient) GetSymbolPrice(symbol string) (*SymbolPrice, error) {
 		percentChange24h = (respJSON.Last - price24hAgo) / price24hAgo * 100
 	}
 
-	return &SymbolPrice{
+	return &model.SymbolPrice{
 		Symbol:           symbol,
 		Price:            strconv.FormatFloat(respJSON.Last, 'f', -1, 64),
 		UpdateAt:         time.Now(),
@@ -141,8 +133,5 @@ func (client *gateClient) GetSymbolPrice(symbol string) (*SymbolPrice, error) {
 }
 
 func init() {
-	register((&gateClient{}).GetName(), func(client *http.Client) ExchangeClient {
-		// Limited by type system in Go, I hate wrapper/adapter
-		return NewGateClient(client)
-	})
+	model.Register(new(gateClient))
 }

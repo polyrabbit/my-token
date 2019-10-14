@@ -1,14 +1,13 @@
 package exchange
 
 import (
-	"net/http"
 	"testing"
 	"time"
 )
 
 func TestKrakenClient(t *testing.T) {
 
-	var client = NewkrakenClient(http.DefaultClient)
+	var client = new(krakenClient)
 
 	t.Run("GetKlinePrice", func(t *testing.T) {
 		_, err := client.GetKlinePrice("EOSETh", time.Now().Add(-61*time.Minute), 1)

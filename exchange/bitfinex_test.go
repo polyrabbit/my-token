@@ -1,13 +1,12 @@
 package exchange
 
 import (
-	"net/http"
 	"testing"
 )
 
 func TestBitfinixClient(t *testing.T) {
 
-	var client = NewBitfinixClient(http.DefaultClient)
+	var client = &bitfinixClient{}
 
 	t.Run("GetSymbolPrice", func(t *testing.T) {
 		sp, err := client.GetSymbolPrice("btcusd")

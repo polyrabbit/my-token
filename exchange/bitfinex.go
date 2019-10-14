@@ -2,64 +2,51 @@ package exchange
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
-	"github.com/pkg/errors"
-	"github.com/sirupsen/logrus"
-	"io/ioutil"
 	"math"
-	"net/http"
 	"strconv"
 	"strings"
 	"time"
+
+	"github.com/polyrabbit/token-ticker/exchange/model"
+
+	"github.com/polyrabbit/token-ticker/http"
+	"github.com/sirupsen/logrus"
 )
 
 // https://docs.bitfinex.com/v2/docs
 const bitfinixBaseApi = "https://api.bitfinex.com/v2/" //Need api v2 to get kline
 
 type bitfinixClient struct {
-	exchangeBaseClient
 	AccessKey string
 	SecretKey string
-}
-
-func NewBitfinixClient(httpClient *http.Client) *bitfinixClient {
-	return &bitfinixClient{exchangeBaseClient: *newExchangeBase(bitfinixBaseApi, httpClient)}
 }
 
 func (client *bitfinixClient) GetName() string {
 	return "Bitfinex"
 }
 
-func (client *bitfinixClient) readResponse(resp *http.Response) ([]byte, error) {
-	respBytes, err := ioutil.ReadAll(resp.Body)
-	defer resp.Body.Close()
-	if err != nil {
-		return nil, err
-	}
-
+func (client *bitfinixClient) checkError(respContent []byte) error {
 	var errResp []interface{}
-
-	if err := json.Unmarshal(respBytes, &errResp); err != nil {
-		if resp.StatusCode != 200 {
-			return nil, errors.New(resp.Status)
-		}
-		return nil, err
+	if err := json.Unmarshal(respContent, &errResp); err != nil {
+		return err
 	}
 
 	if len(errResp) == 0 {
-		return nil, fmt.Errorf("empty response")
+		return errors.New("empty response")
 	}
 
 	if errstr, ok := errResp[0].(string); ok && errstr == "error" {
-		return nil, fmt.Errorf(errResp[2].(string))
+		return errors.New(errResp[2].(string))
 	}
 
-	return respBytes, nil
+	return nil
 }
 
 func (client *bitfinixClient) GetKlinePrice(symbol, frame string, start time.Time) (float64, error) {
 	candlePath := fmt.Sprintf("candles/trade:%s:t%s/hist", frame, symbol)
-	resp, err := client.httpGet(candlePath, map[string]string{
+	respBytes, err := http.Get(bitfinixBaseApi+candlePath, map[string]string{
 		"start": strconv.FormatInt(start.Unix()*1000, 10),
 		"sort":  "1",
 		"limit": "1",
@@ -67,10 +54,11 @@ func (client *bitfinixClient) GetKlinePrice(symbol, frame string, start time.Tim
 	if err != nil {
 		return 0, err
 	}
-	respBytes, err := client.readResponse(resp)
+	if err := client.checkError(respBytes); err != nil {
+		return 0, err
+	}
 
 	var klineResp [][]float64
-
 	if err := json.Unmarshal(respBytes, &klineResp); err != nil {
 		return 0, err
 	}
@@ -79,34 +67,31 @@ func (client *bitfinixClient) GetKlinePrice(symbol, frame string, start time.Tim
 	return klineResp[0][1], nil
 }
 
-func (client *bitfinixClient) GetSymbolPrice(symbol string) (*SymbolPrice, error) {
+func (client *bitfinixClient) GetSymbolPrice(symbol string) (*model.SymbolPrice, error) {
 	symbol = strings.ToUpper(symbol)
-	resp, err := client.httpGet("ticker/t"+symbol, nil)
+	respBytes, err := http.Get(bitfinixBaseApi+"ticker/t"+symbol, nil)
 	if err != nil {
 		return nil, err
 	}
-	respBytes, err := client.readResponse(resp)
-
-	var tickerResp []float64
-
-	if err := json.Unmarshal(respBytes, &tickerResp); err != nil {
+	if err := client.checkError(respBytes); err != nil {
 		return nil, err
 	}
 
+	var tickerResp []float64
+	if err := json.Unmarshal(respBytes, &tickerResp); err != nil {
+		return nil, err
+	}
 	if len(tickerResp) < 7 {
 		return nil, fmt.Errorf("[%s] - not enough data in response array, get %v", client.GetName(), tickerResp)
 	}
 
+	percentChange1h, percentChange24h := math.MaxFloat64, math.MaxFloat64
 	currentPrice := tickerResp[6]
-
-	var percentChange1h, percentChange24h = math.MaxFloat64, math.MaxFloat64
-
 	now := time.Now()
-
 	lastHour := now.Add(-1 * time.Hour)
 	lastHourPrice, err := client.GetKlinePrice(symbol, "1m", lastHour)
 	if err != nil {
-		logrus.Warnf("Failed to get price 1 hour ago, error: %s\n", err)
+		logrus.Warnf("Failed to get price 1 hour ago, error: %v", err)
 	}
 	if lastHourPrice != 0 {
 		percentChange1h = (currentPrice - lastHourPrice) / lastHourPrice * 100
@@ -115,13 +100,13 @@ func (client *bitfinixClient) GetSymbolPrice(symbol string) (*SymbolPrice, error
 	lastDay := now.Add(-24 * time.Hour)
 	lastDayPrice, err := client.GetKlinePrice(symbol, "1m", lastDay)
 	if err != nil {
-		logrus.Warnf("Failed to get price 24 hour ago, error: %s\n", err)
+		logrus.Warnf("Failed to get price 24 hour ago, error: %v", err)
 	}
 	if lastDayPrice != 0 {
 		percentChange24h = (currentPrice - lastDayPrice) / lastDayPrice * 100
 	}
 
-	return &SymbolPrice{
+	return &model.SymbolPrice{
 		Symbol:           strings.ToUpper(symbol),
 		Price:            strconv.FormatFloat(currentPrice, 'f', -1, 64),
 		Source:           client.GetName(),
@@ -132,8 +117,5 @@ func (client *bitfinixClient) GetSymbolPrice(symbol string) (*SymbolPrice, error
 }
 
 func init() {
-	register((&bitfinixClient{}).GetName(), func(client *http.Client) ExchangeClient {
-		// Limited by type system in Go, I hate wrapper/adapter
-		return NewBitfinixClient(client)
-	})
+	model.Register(&bitfinixClient{})
 }

@@ -3,21 +3,21 @@ package exchange
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/sirupsen/logrus"
-	"io"
-	"io/ioutil"
 	"math"
-	"net/http"
 	"strconv"
 	"strings"
 	"time"
+
+	"github.com/polyrabbit/token-ticker/exchange/model"
+
+	"github.com/polyrabbit/token-ticker/http"
+	"github.com/sirupsen/logrus"
 )
 
 // https://github.com/okcoin-okex/API-docs-OKEx.com
 const okexBaseApi = "https://www.okex.com/api/v1"
 
 type okexClient struct {
-	exchangeBaseClient
 	AccessKey string
 	SecretKey string
 }
@@ -61,21 +61,11 @@ type okexCommonResponseProvider interface {
 	getInternalData() interface{}
 }
 
-func NewOKExClient(httpClient *http.Client) *okexClient {
-	return &okexClient{exchangeBaseClient: *newExchangeBase(okexBaseApi, httpClient)}
-}
-
 func (client *okexClient) GetName() string {
 	return "OKEx"
 }
 
-func (client *okexClient) decodeResponse(body io.ReadCloser, respJSON okexCommonResponseProvider) error {
-	respBytes, err := ioutil.ReadAll(body)
-	defer body.Close()
-	if err != nil {
-		return err
-	}
-
+func (client *okexClient) decodeResponse(respBytes []byte, respJSON okexCommonResponseProvider) error {
 	// What a messy
 	respBody := strings.TrimSpace(string(respBytes))
 	if respBody[0] == '[' {
@@ -96,7 +86,7 @@ func (client *okexClient) decodeResponse(body io.ReadCloser, respJSON okexCommon
 
 func (client *okexClient) GetKlinePrice(symbol, period string, size int) (float64, error) {
 	symbol = strings.ToLower(symbol)
-	resp, err := client.httpGet("kline.do", map[string]string{
+	respByte, err := http.Get(okexBaseApi+"/kline.do", map[string]string{
 		"symbol": symbol,
 		"type":   period,
 		"size":   strconv.Itoa(size),
@@ -106,7 +96,7 @@ func (client *okexClient) GetKlinePrice(symbol, period string, size int) (float6
 	}
 
 	var respJSON okexKlineResponse
-	err = client.decodeResponse(resp.Body, &respJSON)
+	err = client.decodeResponse(respByte, &respJSON)
 	if err != nil {
 		return 0, err
 	}
@@ -115,14 +105,14 @@ func (client *okexClient) GetKlinePrice(symbol, period string, size int) (float6
 	return strconv.ParseFloat(respJSON.Data[0][1].(string), 64)
 }
 
-func (client *okexClient) GetSymbolPrice(symbol string) (*SymbolPrice, error) {
-	resp, err := client.httpGet("ticker.do", map[string]string{"symbol": strings.ToLower(symbol)})
+func (client *okexClient) GetSymbolPrice(symbol string) (*model.SymbolPrice, error) {
+	respByte, err := http.Get(okexBaseApi+"/ticker.do", map[string]string{"symbol": strings.ToLower(symbol)})
 	if err != nil {
 		return nil, err
 	}
 
 	var respJSON okexTickerResponse
-	err = client.decodeResponse(resp.Body, &respJSON)
+	err = client.decodeResponse(respByte, &respJSON)
 	if err != nil {
 		return nil, err
 	}
@@ -143,7 +133,7 @@ func (client *okexClient) GetSymbolPrice(symbol string) (*SymbolPrice, error) {
 		percentChange24h = (respJSON.Ticker.Last - price24hAgo) / price24hAgo * 100
 	}
 
-	return &SymbolPrice{
+	return &model.SymbolPrice{
 		Symbol:           symbol,
 		Price:            strconv.FormatFloat(respJSON.Ticker.Last, 'f', -1, 64),
 		UpdateAt:         time.Unix(respJSON.Date, 0),
@@ -154,8 +144,5 @@ func (client *okexClient) GetSymbolPrice(symbol string) (*SymbolPrice, error) {
 }
 
 func init() {
-	register((&okexClient{}).GetName(), func(client *http.Client) ExchangeClient {
-		// Limited by type system in Go, I hate wrapper/adapter
-		return NewOKExClient(client)
-	})
+	model.Register(new(okexClient))
 }

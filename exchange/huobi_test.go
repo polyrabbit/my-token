@@ -1,13 +1,12 @@
 package exchange
 
 import (
-	"net/http"
 	"testing"
 )
 
 func TestHuobiClient(t *testing.T) {
 
-	var client = NewHuobiClient(http.DefaultClient)
+	var client = new(huobiClient)
 
 	t.Run("GetKlinePrice", func(t *testing.T) {
 		_, err := client.GetKlinePrice("bTCusdt", "1min", 60)

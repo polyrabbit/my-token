@@ -2,13 +2,12 @@ package exchange
 
 import (
 	"math"
-	"net/http"
 	"testing"
 )
 
 func TestCoinbaseClient(t *testing.T) {
 
-	var client = NewCoinBaseClient(http.DefaultClient)
+	var client = NewCoinBaseClient()
 
 	t.Run("GetSymbolPrice", func(t *testing.T) {
 		sp, err := client.GetSymbolPrice("BTC-USd")

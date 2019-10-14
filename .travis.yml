@@ -25,7 +25,7 @@ before_deploy:
   - go get -u github.com/mitchellh/gox
   - go get -u github.com/tcnksm/ghr
 
-  - gox -output "binary/tt_{{.OS}}_{{.Arch}}/tt" -ldflags "-X main.Rev=`git rev-parse --short HEAD` -X main.Version=`git describe --tags | cut -dv -f 2`" -verbose
+  - gox -output "binary/tt_{{.OS}}_{{.Arch}}/tt" -ldflags "-X github.com/polyrabbit/token-ticker/config.Rev=`git rev-parse --short HEAD` -X github.com/polyrabbit/token-ticker/config.Version=`git describe --tags | cut -dv -f 2`" -verbose
   - cp token_ticker.example.yaml binary
   - mkdir -p dist
   - for f in binary/*; do

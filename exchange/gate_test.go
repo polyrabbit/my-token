@@ -1,14 +1,13 @@
 package exchange
 
 import (
-	"net/http"
 	"testing"
 	"time"
 )
 
 func TestGateClient(t *testing.T) {
 
-	var client = NewGateClient(http.DefaultClient)
+	var client = new(gateClient)
 
 	t.Run("GetKlinePrice", func(t *testing.T) {
 		_, err := client.GetKlinePrice("bTC_usdt", 60, 1)

@@ -1,13 +1,12 @@
 package exchange
 
 import (
-	"net/http"
 	"testing"
 )
 
 func TestCoinMarketCapClient(t *testing.T) {
 
-	var client = NewCoinmarketcapClient(http.DefaultClient)
+	var client = new(coinMarketCapClient)
 
 	t.Run("GetSymbolPrice", func(t *testing.T) {
 		sp, err := client.GetSymbolPrice("bitcoin")

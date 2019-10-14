@@ -1,14 +1,13 @@
 package exchange
 
 import (
-	"net/http"
 	"testing"
 	"time"
 )
 
 func TestPoloniexClient(t *testing.T) {
 
-	var client = NewPoloniexClient(http.DefaultClient)
+	var client = new(poloniexClient)
 
 	t.Run("GetKlinePrice", func(t *testing.T) {
 		_, err := client.GetKlinePrice("BTC_ETh", time.Now().Add(-1*time.Hour), 300)

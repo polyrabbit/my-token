@@ -1,14 +1,13 @@
 package exchange
 
 import (
-	"net/http"
 	"testing"
 	"time"
 )
 
 func TestBittrexClient(t *testing.T) {
 
-	var client = NewBittrexClient(http.DefaultClient)
+	var client = new(bittrexClient)
 
 	t.Run("GetKlineTicks", func(t *testing.T) {
 		klineResp, err := client.GetKlineTicks("USDT-BTc", "thirtyMin")

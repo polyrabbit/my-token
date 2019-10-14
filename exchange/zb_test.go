@@ -1,14 +1,13 @@
 package exchange
 
 import (
-	"net/http"
 	"testing"
 	"time"
 )
 
 func TestZBClient(t *testing.T) {
 
-	var client = NewZBClient(http.DefaultClient)
+	var client = new(zbClient)
 
 	t.Run("GetKlinePrice", func(t *testing.T) {
 		_, err := client.GetKlinePrice("bTC_usdt", "1min", 60)

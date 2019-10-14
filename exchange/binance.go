@@ -4,19 +4,21 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"github.com/sirupsen/logrus"
 	"math"
-	"net/http"
 	"strconv"
 	"strings"
 	"time"
+
+	"github.com/polyrabbit/token-ticker/exchange/model"
+
+	"github.com/polyrabbit/token-ticker/http"
+	"github.com/sirupsen/logrus"
 )
 
 // https://github.com/binance-exchange/binance-official-api-docs/blob/master/rest-api.md
 const binanceBaseApi = "https://api.binance.com"
 
 type binanceClient struct {
-	exchangeBaseClient
 	AccessKey string
 	SecretKey string
 }
@@ -43,10 +45,6 @@ type binance24hStatistics struct {
 	CloseTime          int64
 }
 
-func NewBinanceClient(httpClient *http.Client) *binanceClient {
-	return &binanceClient{exchangeBaseClient: *newExchangeBase(binanceBaseApi, httpClient)}
-}
-
 func (client *binanceClient) GetName() string {
 	return "Binance"
 }
@@ -54,7 +52,7 @@ func (client *binanceClient) GetName() string {
 func (client *binanceClient) GetPrice1hAgo(symbol string) (float64, error) {
 	now := time.Now()
 	lastHour := now.Add(-1 * time.Hour)
-	resp, err := client.httpGet("/api/v1/klines", map[string]string{
+	respBytes, err := http.Get(binanceBaseApi+"/api/v1/klines", map[string]string{
 		"symbol":    strings.ToUpper(symbol),
 		"interval":  "1m",
 		"limit":     "1",
@@ -63,11 +61,9 @@ func (client *binanceClient) GetPrice1hAgo(symbol string) (float64, error) {
 	if err != nil {
 		return 0, err
 	}
-	defer resp.Body.Close()
 
-	decoder := json.NewDecoder(resp.Body)
 	var klines [][]interface{}
-	if err := decoder.Decode(&klines); err != nil {
+	if err := json.Unmarshal(respBytes, &klines); err != nil {
 		return 0, err
 	}
 	if s, ok := klines[0][1].(string); ok {
@@ -84,14 +80,12 @@ func (client *binanceClient) Get24hStatistics(symbol string) (*binance24hStatist
 	// always return an empty response, so the caller doesn't need to handle error
 	var respJSON binance24hStatistics
 
-	resp, err := client.httpGet("/api/v1/ticker/24hr", map[string]string{"symbol": strings.ToUpper(symbol)})
+	respBytes, err := http.Get(binanceBaseApi+"/api/v1/ticker/24hr", map[string]string{"symbol": strings.ToUpper(symbol)})
 	if err != nil {
 		return &respJSON, err
 	}
-	defer resp.Body.Close()
 
-	decoder := json.NewDecoder(resp.Body)
-	if err := decoder.Decode(&respJSON); err != nil {
+	if err := json.Unmarshal(respBytes, &respJSON); err != nil {
 		return &respJSON, err
 	}
 
@@ -101,7 +95,7 @@ func (client *binanceClient) Get24hStatistics(symbol string) (*binance24hStatist
 	return &respJSON, nil
 }
 
-func (client *binanceClient) GetSymbolPrice(symbol string) (*SymbolPrice, error) {
+func (client *binanceClient) GetSymbolPrice(symbol string) (*model.SymbolPrice, error) {
 	// I found 24 hour price statistics already covers required info, uncomment the following code if needed
 
 	//rawUrl := client.buildUrl("/api/v3/ticker/price", map[string]string{"symbol": strings.ToUpper(symbol)})
@@ -139,7 +133,7 @@ func (client *binanceClient) GetSymbolPrice(symbol string) (*SymbolPrice, error)
 		percentChange1h = (currentPrice - price1hAgo) / price1hAgo * 100
 	}
 
-	return &SymbolPrice{
+	return &model.SymbolPrice{
 		Symbol:           symbol,
 		Price:            stat24h.LastPrice,
 		UpdateAt:         time.Unix(stat24h.CloseTime/1000, 0),
@@ -150,8 +144,5 @@ func (client *binanceClient) GetSymbolPrice(symbol string) (*SymbolPrice, error)
 }
 
 func init() {
-	register((&binanceClient{}).GetName(), func(client *http.Client) ExchangeClient {
-		// Limited by type system in Go, I hate wrapper/adapter
-		return NewBinanceClient(client)
-	})
+	model.Register(&binanceClient{})
 }

@@ -3,27 +3,24 @@ package exchange
 import (
 	"errors"
 	"fmt"
-	"github.com/buger/jsonparser"
-	"github.com/sirupsen/logrus"
-	"io/ioutil"
 	"math"
-	"net/http"
 	"strconv"
 	"strings"
 	"time"
+
+	"github.com/polyrabbit/token-ticker/exchange/model"
+
+	"github.com/buger/jsonparser"
+	"github.com/polyrabbit/token-ticker/http"
+	"github.com/sirupsen/logrus"
 )
 
 // https://www.kraken.com/help/api
 const krakenBaseApi = "https://api.kraken.com/0/public/"
 
 type krakenClient struct {
-	exchangeBaseClient
 	AccessKey string
 	SecretKey string
-}
-
-func NewkrakenClient(httpClient *http.Client) *krakenClient {
-	return &krakenClient{exchangeBaseClient: *newExchangeBase(krakenBaseApi, httpClient)}
 }
 
 func (client *krakenClient) GetName() string {
@@ -33,15 +30,9 @@ func (client *krakenClient) GetName() string {
 /**
 Read response and check any potential errors
 */
-func (client *krakenClient) readResponse(resp *http.Response) ([]byte, error) {
-	defer resp.Body.Close()
-	content, err := ioutil.ReadAll(resp.Body)
-	if err != nil {
-		return nil, err
-	}
-
+func (client *krakenClient) readResponse(respBytes []byte) ([]byte, error) {
 	var errorMsg []string
-	jsonparser.ArrayEach(content, func(value []byte, dataType jsonparser.ValueType, offset int, err error) {
+	jsonparser.ArrayEach(respBytes, func(value []byte, dataType jsonparser.ValueType, offset int, err error) {
 		if dataType == jsonparser.String {
 			errorMsg = append(errorMsg, string(value))
 		}
@@ -49,16 +40,12 @@ func (client *krakenClient) readResponse(resp *http.Response) ([]byte, error) {
 	if len(errorMsg) != 0 {
 		return nil, errors.New(strings.Join(errorMsg, ", "))
 	}
-
-	if resp.StatusCode != 200 {
-		return nil, errors.New(resp.Status)
-	}
-	return content, nil
+	return respBytes, nil
 }
 
 func (client *krakenClient) GetKlinePrice(symbol string, since time.Time, interval int) (float64, error) {
 	symbolUpperCase := strings.ToUpper(symbol)
-	resp, err := client.httpGet("OHLC", map[string]string{
+	respByte, err := http.Get(krakenBaseApi+"OHLC", map[string]string{
 		"pair":     symbolUpperCase,
 		"since":    strconv.FormatInt(since.Unix(), 10),
 		"interval": strconv.Itoa(interval),
@@ -67,7 +54,7 @@ func (client *krakenClient) GetKlinePrice(symbol string, since time.Time, interv
 		return 0, err
 	}
 
-	content, err := client.readResponse(resp)
+	content, err := client.readResponse(respByte)
 	if err != nil {
 		return 0, err
 	}
@@ -93,13 +80,13 @@ func (client *krakenClient) GetKlinePrice(symbol string, since time.Time, interv
 	return strconv.ParseFloat(openPrice, 64)
 }
 
-func (client *krakenClient) GetSymbolPrice(symbol string) (*SymbolPrice, error) {
-	resp, err := client.httpGet("Ticker", map[string]string{"pair": strings.ToUpper(symbol)})
+func (client *krakenClient) GetSymbolPrice(symbol string) (*model.SymbolPrice, error) {
+	respByte, err := http.Get(krakenBaseApi+"Ticker", map[string]string{"pair": strings.ToUpper(symbol)})
 	if err != nil {
 		return nil, err
 	}
 
-	content, err := client.readResponse(resp)
+	content, err := client.readResponse(respByte)
 	if err != nil {
 		return nil, err
 	}
@@ -132,7 +119,7 @@ func (client *krakenClient) GetSymbolPrice(symbol string) (*SymbolPrice, error) 
 		percentChange24h = (lastPrice - price24hAgo) / price24hAgo * 100
 	}
 
-	return &SymbolPrice{
+	return &model.SymbolPrice{
 		Symbol:           symbol,
 		Price:            lastPriceString,
 		UpdateAt:         time.Now(),
@@ -143,8 +130,5 @@ func (client *krakenClient) GetSymbolPrice(symbol string) (*SymbolPrice, error) 
 }
 
 func init() {
-	register((&krakenClient{}).GetName(), func(client *http.Client) ExchangeClient {
-		// Limited by type system in Go, I hate wrapper/adapter
-		return NewkrakenClient(client)
-	})
+	model.Register(new(krakenClient))
 }

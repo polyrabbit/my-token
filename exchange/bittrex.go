@@ -4,14 +4,16 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"github.com/sirupsen/logrus"
 	"math"
-	"net/http"
-	"net/url"
 	"sort"
 	"strconv"
 	"strings"
 	"time"
+
+	"github.com/polyrabbit/token-ticker/exchange/model"
+
+	"github.com/polyrabbit/token-ticker/http"
+	"github.com/sirupsen/logrus"
 )
 
 // https://support.bittrex.com/hc/en-us/articles/115003723911
@@ -21,7 +23,6 @@ const bittrexBaseApi = "https://bittrex.com/api/v1.1/"
 const bittrexV2BaseApi = "https://bittrex.com/Api/v2.0/pub/market/"
 
 type bittrexClient struct {
-	exchangeBaseClient
 	AccessKey string
 	SecretKey string
 }
@@ -64,22 +65,12 @@ type bittrexCommonResponseProvider interface {
 	getCommonResponse() bittrexCommonResponse
 }
 
-func NewBittrexClient(httpClient *http.Client) *bittrexClient {
-	return &bittrexClient{exchangeBaseClient: *newExchangeBase(bittrexBaseApi, httpClient)}
-}
-
 func (client *bittrexClient) GetName() string {
 	return "Bittrex"
 }
 
-func (client *bittrexClient) decodeResponse(resp *http.Response, respJSON bittrexCommonResponseProvider) error {
-	defer resp.Body.Close()
-
-	decoder := json.NewDecoder(resp.Body)
-	if err := decoder.Decode(respJSON); err != nil {
-		if resp.StatusCode != 200 {
-			return errors.New(resp.Status)
-		}
+func (client *bittrexClient) decodeResponse(respBytes []byte, respJSON bittrexCommonResponseProvider) error {
+	if err := json.Unmarshal(respBytes, respJSON); err != nil {
 		return err
 	}
 
@@ -92,13 +83,8 @@ func (client *bittrexClient) decodeResponse(resp *http.Response, respJSON bittre
 }
 
 func (client *bittrexClient) GetKlineTicks(market, interval string) (*bittrexKlineResponse, error) {
-	// Using a unofficial api
-	origUrl := client.BaseURL
-	defer func() { client.BaseURL = origUrl }() // Restore to v1 (stable)
-	client.BaseURL, _ = url.Parse(bittrexV2BaseApi)
-
 	market = strings.ToLower(market)
-	resp, err := client.httpGet("GetTicks", map[string]string{
+	respBytes, err := http.Get(bittrexV2BaseApi+"/GetTicks", map[string]string{
 		"marketName":   market,
 		"tickInterval": interval,
 	})
@@ -107,7 +93,7 @@ func (client *bittrexClient) GetKlineTicks(market, interval string) (*bittrexKli
 	}
 
 	var respJSON bittrexKlineResponse
-	err = client.decodeResponse(resp, &respJSON)
+	err = client.decodeResponse(respBytes, &respJSON)
 	if err != nil {
 		return nil, err
 	}
@@ -128,14 +114,14 @@ func (client *bittrexClient) GetPriceRightAfter(klineResp *bittrexKlineResponse,
 	return 0, fmt.Errorf("no time found right after %v", after)
 }
 
-func (client *bittrexClient) GetSymbolPrice(symbol string) (*SymbolPrice, error) {
-	resp, err := client.httpGet("public/getticker", map[string]string{"market": strings.ToUpper(symbol)})
+func (client *bittrexClient) GetSymbolPrice(symbol string) (*model.SymbolPrice, error) {
+	respBytes, err := http.Get(bittrexBaseApi+"/public/getticker", map[string]string{"market": strings.ToUpper(symbol)})
 	if err != nil {
 		return nil, err
 	}
 
 	var respJSON bittrexTickerResponse
-	err = client.decodeResponse(resp, &respJSON)
+	err = client.decodeResponse(respBytes, &respJSON)
 	if err != nil {
 		return nil, err
 	}
@@ -167,7 +153,7 @@ func (client *bittrexClient) GetSymbolPrice(symbol string) (*SymbolPrice, error)
 		}
 	}
 
-	return &SymbolPrice{
+	return &model.SymbolPrice{
 		Symbol:           symbol,
 		Price:            strconv.FormatFloat(respJSON.Result.Last, 'f', -1, 64),
 		UpdateAt:         time.Now(),
@@ -178,8 +164,5 @@ func (client *bittrexClient) GetSymbolPrice(symbol string) (*SymbolPrice, error)
 }
 
 func init() {
-	register((&bittrexClient{}).GetName(), func(client *http.Client) ExchangeClient {
-		// Limited by type system in Go, I hate wrapper/adapter
-		return NewBittrexClient(client)
-	})
+	model.Register(&bittrexClient{})
 }

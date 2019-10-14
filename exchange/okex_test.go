@@ -1,13 +1,12 @@
 package exchange
 
 import (
-	"net/http"
 	"testing"
 )
 
 func TestOKExClient(t *testing.T) {
 
-	var client = NewOKExClient(http.DefaultClient)
+	var client = new(okexClient)
 
 	t.Run("GetKlinePrice", func(t *testing.T) {
 		_, err := client.GetKlinePrice("bTC_usdt", "1min", 60)

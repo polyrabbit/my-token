@@ -2,24 +2,25 @@ package exchange
 
 import (
 	"fmt"
-	"github.com/preichenberger/go-coinbasepro/v2"
-	"github.com/sirupsen/logrus"
 	"math"
-	"net/http"
 	"sort"
 	"strconv"
 	"time"
+
+	"github.com/polyrabbit/token-ticker/exchange/model"
+
+	"github.com/polyrabbit/token-ticker/http"
+	"github.com/preichenberger/go-coinbasepro/v2"
+	"github.com/sirupsen/logrus"
 )
 
 type coinbaseClient struct {
 	coinbasepro *coinbasepro.Client
 }
 
-//type coinbaseClient *coinbasepro.Client
-
-func NewCoinBaseClient(httpClient *http.Client) *coinbaseClient {
+func NewCoinBaseClient() *coinbaseClient {
 	client := coinbasepro.NewClient()
-	client.HTTPClient = httpClient
+	client.HTTPClient = http.HTTPClient
 	return &coinbaseClient{coinbasepro: client}
 }
 
@@ -38,7 +39,7 @@ func (client *coinbaseClient) GetPriceRightAfter(candles []coinbasepro.HistoricR
 	return 0, fmt.Errorf("no time found right after %v", after)
 }
 
-func (client *coinbaseClient) GetSymbolPrice(symbol string) (*SymbolPrice, error) {
+func (client *coinbaseClient) GetSymbolPrice(symbol string) (*model.SymbolPrice, error) {
 	ticker, err := client.coinbasepro.GetTicker(symbol)
 	if err != nil {
 		return nil, err
@@ -75,7 +76,7 @@ func (client *coinbaseClient) GetSymbolPrice(symbol string) (*SymbolPrice, error
 		}
 	}
 
-	return &SymbolPrice{
+	return &model.SymbolPrice{
 		Symbol:           symbol,
 		Price:            ticker.Price,
 		UpdateAt:         time.Time(ticker.Time),
@@ -86,8 +87,5 @@ func (client *coinbaseClient) GetSymbolPrice(symbol string) (*SymbolPrice, error
 }
 
 func init() {
-	register((&coinbaseClient{}).GetName(), func(client *http.Client) ExchangeClient {
-		// Limited by type system in Go, I hate wrapper/adapter
-		return NewCoinBaseClient(client)
-	})
+	model.Register(NewCoinBaseClient())
 }

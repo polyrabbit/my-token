@@ -4,15 +4,17 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"net/http"
 	"time"
+
+	"github.com/polyrabbit/token-ticker/exchange/model"
+
+	"github.com/polyrabbit/token-ticker/http"
 )
 
 // https://coinmarketcap.com/api/
 const coinmarketcapBaseApi = "https://api.coinmarketcap.com/v1/ticker/"
 
 type coinMarketCapClient struct {
-	exchangeBaseClient
 	AccessKey string
 	SecretKey string
 }
@@ -39,43 +41,34 @@ type notFoundResponse struct {
 	Error string
 }
 
-// I don't like returning a general type here, any other better way to use the factory pattern?
-func NewCoinmarketcapClient(httpClient *http.Client) *coinMarketCapClient {
-	return &coinMarketCapClient{exchangeBaseClient: *newExchangeBase(coinmarketcapBaseApi, httpClient)}
-}
-
 func (client *coinMarketCapClient) GetName() string {
 	return "CoinMarketCap"
 }
 
-func (client *coinMarketCapClient) GetSymbolPrice(symbol string) (*SymbolPrice, error) {
-	resp, err := client.httpGet(symbol+"/", nil)
+func (client *coinMarketCapClient) GetSymbolPrice(symbol string) (*model.SymbolPrice, error) {
+	respBytes, err := http.Get(coinmarketcapBaseApi+symbol+"/", nil)
 	if err != nil {
-		return nil, err
-	}
-	defer resp.Body.Close()
-
-	decoder := json.NewDecoder(resp.Body)
-
-	if resp.StatusCode == 404 {
-		resp := &notFoundResponse{}
-		if err := decoder.Decode(resp); err != nil {
-			return nil, err
+		if herr, ok := err.(*http.HTTPError); ok {
+			resp := &notFoundResponse{}
+			if err := json.Unmarshal(herr.Body, resp); err != nil {
+				return nil, err
+			}
+			return nil, errors.New(resp.Error)
 		}
-		return nil, errors.New(resp.Error)
+		return nil, err
 	}
 
 	var tokens []coinMarketCapToken
-	if err := decoder.Decode(&tokens); err != nil {
+	if err := json.Unmarshal(respBytes, &tokens); err != nil {
 		return nil, err
 	}
 
 	if len(tokens) == 0 {
-		return nil, fmt.Errorf("Cannot find symbol %s, got zero-sized array response", symbol)
+		return nil, fmt.Errorf("cannot find symbol %s, got zero-sized array response", symbol)
 	}
 	token := tokens[0]
 
-	return &SymbolPrice{
+	return &model.SymbolPrice{
 		Symbol:           token.Symbol,
 		Price:            token.PriceUSD,
 		Source:           client.GetName(),
@@ -85,8 +78,5 @@ func (client *coinMarketCapClient) GetSymbolPrice(symbol string) (*SymbolPrice, 
 }
 
 func init() {
-	register((&coinMarketCapClient{}).GetName(), func(client *http.Client) ExchangeClient {
-		// Limited by type system in Go, I hate wrapper/adapter
-		return NewCoinmarketcapClient(client)
-	})
+	model.Register(new(coinMarketCapClient))
 }

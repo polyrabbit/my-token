@@ -4,11 +4,13 @@ import (
 	"encoding/json"
 	"errors"
 	"math"
-	"net/http"
 	"strconv"
 	"strings"
 	"time"
 
+	"github.com/polyrabbit/token-ticker/exchange/model"
+
+	"github.com/polyrabbit/token-ticker/http"
 	"github.com/sirupsen/logrus"
 )
 
@@ -16,7 +18,6 @@ import (
 const huobiBaseApi = "https://api.huobipro.com"
 
 type huobiClient struct {
-	exchangeBaseClient
 	AccessKey string
 	SecretKey string
 }
@@ -61,21 +62,12 @@ type huobiCommonResponseProvider interface {
 	getCommonResponse() huobiCommonResponse
 }
 
-func NewHuobiClient(httpClient *http.Client) *huobiClient {
-	return &huobiClient{exchangeBaseClient: *newExchangeBase(huobiBaseApi, httpClient)}
-}
-
 func (client *huobiClient) GetName() string {
 	return "Huobi"
 }
 
-func (client *huobiClient) decodeResponse(resp *http.Response, respJSON huobiCommonResponseProvider) error {
-	decoder := json.NewDecoder(resp.Body)
-	defer resp.Body.Close()
-	if err := decoder.Decode(&respJSON); err != nil {
-		if resp.StatusCode != 200 {
-			return errors.New(resp.Status)
-		}
+func (client *huobiClient) decodeResponse(respBytes []byte, respJSON huobiCommonResponseProvider) error {
+	if err := json.Unmarshal(respBytes, &respJSON); err != nil {
 		return err
 	}
 
@@ -92,7 +84,7 @@ func (client *huobiClient) decodeResponse(resp *http.Response, respJSON huobiCom
 
 func (client *huobiClient) GetKlinePrice(symbol, period string, size int) (float64, error) {
 	symbol = strings.ToLower(symbol)
-	resp, err := client.httpGet("/market/history/kline", map[string]string{
+	respByte, err := http.Get(huobiBaseApi+"/market/history/kline", map[string]string{
 		"symbol": symbol,
 		"period": period,
 		"size":   strconv.Itoa(size),
@@ -102,7 +94,7 @@ func (client *huobiClient) GetKlinePrice(symbol, period string, size int) (float
 	}
 
 	var respJSON huobiKlineResponse
-	err = client.decodeResponse(resp, &respJSON)
+	err = client.decodeResponse(respByte, &respJSON)
 	if err != nil {
 		return 0, err
 	}
@@ -116,14 +108,14 @@ func (client *huobiClient) GetKlinePrice(symbol, period string, size int) (float
 	return open, nil
 }
 
-func (client *huobiClient) GetSymbolPrice(symbol string) (*SymbolPrice, error) {
-	resp, err := client.httpGet("/market/trade", map[string]string{"symbol": strings.ToLower(symbol)})
+func (client *huobiClient) GetSymbolPrice(symbol string) (*model.SymbolPrice, error) {
+	respByte, err := http.Get(huobiBaseApi+"/market/trade", map[string]string{"symbol": strings.ToLower(symbol)})
 	if err != nil {
 		return nil, err
 	}
 
 	var respJSON huobiTickerResponse
-	err = client.decodeResponse(resp, &respJSON)
+	err = client.decodeResponse(respByte, &respJSON)
 	if err != nil {
 		return nil, err
 	}
@@ -145,7 +137,7 @@ func (client *huobiClient) GetSymbolPrice(symbol string) (*SymbolPrice, error) {
 		percentChange24h = (ticker.Price - price24hAgo) / price24hAgo * 100
 	}
 
-	return &SymbolPrice{
+	return &model.SymbolPrice{
 		Symbol:           symbol,
 		Price:            strconv.FormatFloat(ticker.Price, 'f', -1, 64),
 		UpdateAt:         time.Unix(ticker.Ts/1000, 0),
@@ -156,8 +148,5 @@ func (client *huobiClient) GetSymbolPrice(symbol string) (*SymbolPrice, error) {
 }
 
 func init() {
-	register((&huobiClient{}).GetName(), func(client *http.Client) ExchangeClient {
-		// Limited by type system in Go, I hate wrapper/adapter
-		return NewHuobiClient(client)
-	})
+	model.Register(new(huobiClient))
 }

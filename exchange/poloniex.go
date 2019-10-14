@@ -3,21 +3,21 @@ package exchange
 import (
 	"encoding/json"
 	"errors"
-	"github.com/sirupsen/logrus"
-	"io"
-	"io/ioutil"
 	"math"
-	"net/http"
 	"strconv"
 	"strings"
 	"time"
+
+	"github.com/polyrabbit/token-ticker/exchange/model"
+
+	"github.com/polyrabbit/token-ticker/http"
+	"github.com/sirupsen/logrus"
 )
 
 // https://poloniex.com/support/api/
 const poloniexBaseApi = "https://poloniex.com/"
 
 type poloniexClient struct {
-	exchangeBaseClient
 	AccessKey string
 	SecretKey string
 }
@@ -36,21 +36,11 @@ type poloniexKline struct {
 	Open float64
 }
 
-func NewPoloniexClient(httpClient *http.Client) *poloniexClient {
-	return &poloniexClient{exchangeBaseClient: *newExchangeBase(poloniexBaseApi, httpClient)}
-}
-
 func (client *poloniexClient) GetName() string {
 	return "Poloniex"
 }
 
-func (client *poloniexClient) decodeResponse(body io.ReadCloser, result interface{}) error {
-	respBytes, err := ioutil.ReadAll(body)
-	defer body.Close()
-	if err != nil {
-		return err
-	}
-
+func (client *poloniexClient) decodeResponse(respBytes []byte, result interface{}) error {
 	var errResp struct {
 		Error *string
 	}
@@ -63,7 +53,7 @@ func (client *poloniexClient) decodeResponse(body io.ReadCloser, result interfac
 
 func (client *poloniexClient) GetKlinePrice(symbol string, start time.Time, period int) (float64, error) {
 	end := start.Add(30 * time.Minute)
-	resp, err := client.httpGet("public", map[string]string{
+	respBytes, err := http.Get(poloniexBaseApi+"public", map[string]string{
 		"command":      "returnChartData",
 		"currencyPair": strings.ToUpper(symbol),
 		"start":        strconv.FormatInt(start.Unix(), 10),
@@ -75,7 +65,7 @@ func (client *poloniexClient) GetKlinePrice(symbol string, start time.Time, peri
 	}
 
 	var respJSON []poloniexKline
-	err = client.decodeResponse(resp.Body, &respJSON)
+	err = client.decodeResponse(respBytes, &respJSON)
 	if err != nil {
 		return 0, err
 	}
@@ -94,14 +84,14 @@ func (client *poloniexClient) lookupSymbol(symbol string, tickers map[string]pol
 	return nil
 }
 
-func (client *poloniexClient) GetSymbolPrice(symbol string) (*SymbolPrice, error) {
-	resp, err := client.httpGet("public", map[string]string{"command": "returnTicker"})
+func (client *poloniexClient) GetSymbolPrice(symbol string) (*model.SymbolPrice, error) {
+	respBytes, err := http.Get(poloniexBaseApi+"public", map[string]string{"command": "returnTicker"})
 	if err != nil {
 		return nil, err
 	}
 
 	var tickers map[string]poloniexTicker
-	if err := client.decodeResponse(resp.Body, &tickers); err != nil {
+	if err := client.decodeResponse(respBytes, &tickers); err != nil {
 		return nil, err
 	}
 	symbolTicker := client.lookupSymbol(symbol, tickers)
@@ -120,7 +110,7 @@ func (client *poloniexClient) GetSymbolPrice(symbol string) (*SymbolPrice, error
 		percentChange1h = (symbolTicker.Last - price1hAgo) / price1hAgo * 100
 	}
 
-	return &SymbolPrice{
+	return &model.SymbolPrice{
 		Symbol:           symbol,
 		Price:            strconv.FormatFloat(symbolTicker.Last, 'f', -1, 64),
 		UpdateAt:         time.Now(),
@@ -131,8 +121,5 @@ func (client *poloniexClient) GetSymbolPrice(symbol string) (*SymbolPrice, error
 }
 
 func init() {
-	register((&poloniexClient{}).GetName(), func(client *http.Client) ExchangeClient {
-		// Limited by type system in Go, I hate wrapper/adapter
-		return NewPoloniexClient(client)
-	})
+	model.Register(new(poloniexClient))
 }

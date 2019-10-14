@@ -1,13 +1,12 @@
 package exchange
 
 import (
-	"net/http"
 	"testing"
 )
 
 func TestHitBtcClient(t *testing.T) {
 
-	var client = NewHitBtcClient(http.DefaultClient)
+	var client = new(hitBtcClient)
 
 	t.Run("GetKlinePrice", func(t *testing.T) {
 		_, err := client.GetKlinePrice("bTCusd", "M1", 60)

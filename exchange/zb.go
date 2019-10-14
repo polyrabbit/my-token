@@ -3,13 +3,15 @@ package exchange
 import (
 	"encoding/json"
 	"errors"
-	"github.com/sirupsen/logrus"
-	"io"
 	"math"
-	"net/http"
 	"strconv"
 	"strings"
 	"time"
+
+	"github.com/polyrabbit/token-ticker/exchange/model"
+
+	"github.com/polyrabbit/token-ticker/http"
+	"github.com/sirupsen/logrus"
 )
 
 // https://www.zb.com/i/developer
@@ -18,7 +20,6 @@ const zbBaseApi = "http://api.zb.com/data/v1/"
 // ZB api is very similar to OKEx, who copied whom?
 
 type zbClient struct {
-	exchangeBaseClient
 	AccessKey string
 	SecretKey string
 }
@@ -54,19 +55,12 @@ type zbCommonResponseProvider interface {
 	getCommonResponse() zbCommonResponse
 }
 
-func NewZBClient(httpClient *http.Client) *zbClient {
-	return &zbClient{exchangeBaseClient: *newExchangeBase(zbBaseApi, httpClient)}
-}
-
 func (client *zbClient) GetName() string {
 	return "ZB"
 }
 
-func (client *zbClient) decodeResponse(body io.ReadCloser, respJSON zbCommonResponseProvider) error {
-	defer body.Close()
-
-	decoder := json.NewDecoder(body)
-	if err := decoder.Decode(&respJSON); err != nil {
+func (client *zbClient) decodeResponse(respByte []byte, respJSON zbCommonResponseProvider) error {
+	if err := json.Unmarshal(respByte, respJSON); err != nil {
 		return err
 	}
 
@@ -83,7 +77,7 @@ func (client *zbClient) decodeResponse(body io.ReadCloser, respJSON zbCommonResp
 
 func (client *zbClient) GetKlinePrice(symbol, period string, size int) (float64, error) {
 	symbol = strings.ToLower(symbol)
-	resp, err := client.httpGet("kline", map[string]string{
+	respBytes, err := http.Get(zbBaseApi+"kline", map[string]string{
 		"market": symbol,
 		"type":   period,
 		"size":   strconv.Itoa(size),
@@ -93,7 +87,7 @@ func (client *zbClient) GetKlinePrice(symbol, period string, size int) (float64,
 	}
 
 	var respJSON zbKlineResponse
-	err = client.decodeResponse(resp.Body, &respJSON)
+	err = client.decodeResponse(respBytes, &respJSON)
 	if err != nil {
 		return 0, err
 	}
@@ -102,14 +96,14 @@ func (client *zbClient) GetKlinePrice(symbol, period string, size int) (float64,
 	return respJSON.Data[0][1], nil
 }
 
-func (client *zbClient) GetSymbolPrice(symbol string) (*SymbolPrice, error) {
-	resp, err := client.httpGet("ticker", map[string]string{"market": strings.ToLower(symbol)})
+func (client *zbClient) GetSymbolPrice(symbol string) (*model.SymbolPrice, error) {
+	respBytes, err := http.Get(zbBaseApi+"ticker", map[string]string{"market": strings.ToLower(symbol)})
 	if err != nil {
 		return nil, err
 	}
 
 	var respJSON zbTickerResponse
-	err = client.decodeResponse(resp.Body, &respJSON)
+	err = client.decodeResponse(respBytes, &respJSON)
 	if err != nil {
 		return nil, err
 	}
@@ -130,7 +124,7 @@ func (client *zbClient) GetSymbolPrice(symbol string) (*SymbolPrice, error) {
 		percentChange24h = (respJSON.Ticker.Last - price24hAgo) / price24hAgo * 100
 	}
 
-	return &SymbolPrice{
+	return &model.SymbolPrice{
 		Symbol:           symbol,
 		Price:            strconv.FormatFloat(respJSON.Ticker.Last, 'f', -1, 64),
 		UpdateAt:         time.Unix(respJSON.Date/1000, 0),
@@ -141,8 +135,5 @@ func (client *zbClient) GetSymbolPrice(symbol string) (*SymbolPrice, error) {
 }
 
 func init() {
-	register((&zbClient{}).GetName(), func(client *http.Client) ExchangeClient {
-		// Limited by type system in Go, I hate wrapper/adapter
-		return NewZBClient(client)
-	})
+	model.Register(new(zbClient))
 }

@@ -1,13 +1,12 @@
 package exchange
 
 import (
-	"net/http"
 	"testing"
 )
 
 func TestBinanceClient(t *testing.T) {
 
-	var client = NewBinanceClient(http.DefaultClient)
+	var client = &binanceClient{}
 
 	t.Run("Get24hStatistics", func(t *testing.T) {
 		stat, err := client.Get24hStatistics("ethbtc")

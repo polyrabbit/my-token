@@ -4,20 +4,21 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"github.com/sirupsen/logrus"
-	"io"
 	"math"
-	"net/http"
 	"strconv"
 	"strings"
 	"time"
+
+	"github.com/polyrabbit/token-ticker/exchange/model"
+
+	"github.com/polyrabbit/token-ticker/http"
+	"github.com/sirupsen/logrus"
 )
 
 // https://developer.big.one/
 const bigOneBaseApi = "https://api.big.one/"
 
 type bigOneClient struct {
-	exchangeBaseClient
 	AccessKey string
 	SecretKey string
 }
@@ -47,31 +48,8 @@ type bigOneMarketResponse struct {
 	}
 }
 
-func NewBigOneClient(httpClient *http.Client) *bigOneClient {
-	return &bigOneClient{exchangeBaseClient: *newExchangeBase(bigOneBaseApi, httpClient)}
-}
-
 func (client *bigOneClient) GetName() string {
 	return "BigONE"
-}
-
-func (client *bigOneClient) decodeResponse(body io.ReadCloser, respJSON zbCommonResponseProvider) error {
-	defer body.Close()
-
-	decoder := json.NewDecoder(body)
-	if err := decoder.Decode(&respJSON); err != nil {
-		return err
-	}
-
-	// All I need is to get the common part, I don't like this
-	commonResponse := respJSON.getCommonResponse()
-	if commonResponse.Error != nil {
-		return errors.New(*commonResponse.Error)
-	}
-	if commonResponse.Message != nil {
-		return errors.New(*commonResponse.Message)
-	}
-	return nil
 }
 
 func (client *bigOneClient) SearchKlinePriceNear(klineIntervals [][]interface{}, after time.Time) (float64, error) {
@@ -95,18 +73,15 @@ func (client *bigOneClient) SearchKlinePriceNear(klineIntervals [][]interface{},
 	return 0, fmt.Errorf("no time found right after %v, the last time in this interval is %v", after.Local(), intervalTime.Local())
 }
 
-func (client *bigOneClient) GetSymbolPrice(symbol string) (*SymbolPrice, error) {
+func (client *bigOneClient) GetSymbolPrice(symbol string) (*model.SymbolPrice, error) {
 	// One api to get all
-	resp, err := client.httpGet("markets/"+strings.ToUpper(symbol), nil)
+	respBytes, err := http.Get(binanceBaseApi+"/markets/"+strings.ToUpper(symbol), nil)
 	if err != nil {
 		return nil, err
 	}
-	defer resp.Body.Close()
 
 	var respJSON bigOneMarketResponse
-
-	decoder := json.NewDecoder(resp.Body)
-	if err := decoder.Decode(&respJSON); err != nil {
+	if err := json.Unmarshal(respBytes, &respJSON); err != nil {
 		return nil, err
 	}
 
@@ -136,7 +111,7 @@ func (client *bigOneClient) GetSymbolPrice(symbol string) (*SymbolPrice, error) 
 		percentChange24h = (respJSON.Data.Ticker.Price - price24hAgo) / price24hAgo * 100
 	}
 
-	return &SymbolPrice{
+	return &model.SymbolPrice{
 		Symbol:           symbol,
 		Price:            strconv.FormatFloat(respJSON.Data.Ticker.Price, 'f', -1, 64),
 		UpdateAt:         time.Now(),
