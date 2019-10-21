@@ -16,8 +16,9 @@ import (
 
 // Will be set by go-build
 var (
-	Version string
-	Rev     string
+	Version       string
+	Rev           string
+	exampleConfig string
 )
 
 func init() {
@@ -36,10 +37,16 @@ func init() {
 	showExchanges := pflag.BoolP("list-exchanges", "l", false, "List supported exchanges")
 	pflag.IntP("refresh", "r", 0, "Auto refresh on every specified seconds, "+
 		"note every exchange has a rate limit, \ntoo frequent refresh may cause your IP banned by their servers")
+
 	var configFile string
-	pflag.StringVarP(&configFile, "config-file", "c", "", "Config file path, "+
-		"refer to \"token_ticker.example.yaml\" for the format, \nby default token-ticker uses \"token_ticker.yml\" "+
-		"in current directory or $HOME as config file")
+	pflag.StringVarP(&configFile, "config-file", "c", "", `Config file path, use "--example-config-file <path>" `+
+		"to generate an example config file,\n"+
+		"by default token-ticker uses \"token_ticker.yml\" in current directory or $HOME as config file")
+	var exampleConfigFile string
+	pflag.StringVar(&exampleConfigFile, "example-config-file", "",
+		"Generate example config file to the specified file path, by default it outputs to stdout")
+	pflag.Lookup("example-config-file").NoOptDefVal = "-"
+
 	pflag.StringSliceP("show", "s", writer.GetColumns(), "Only show comma-separated columns")
 	pflag.StringP("proxy", "p", "", "Proxy used when sending HTTP request \n(eg. "+
 		"\"http://localhost:7777\", \"https://localhost:7777\", \"socks5://localhost:1080\")")
@@ -66,6 +73,11 @@ func init() {
 		for _, name := range model.GetAllNames() {
 			fmt.Fprintf(os.Stderr, " %s\n", name)
 		}
+		os.Exit(0)
+	}
+
+	if exampleConfigFile != "" {
+		writeExampleConfig(exampleConfigFile)
 		os.Exit(0)
 	}
 
@@ -106,6 +118,29 @@ func showUsageAndExit() {
 		" (eg. to get BitCoin price from Bitfinex and CoinMarketCap you should use query string \"Bitfinex.BTCUSDT CoinMarketCap.Bitcoin\").")
 	fmt.Fprintln(os.Stderr, "\nFind help/updates from here - https://github.com/polyrabbit/token-ticker")
 	os.Exit(0)
+}
+
+func writeExampleConfig(fpath string) {
+	if exampleConfig == "" {
+		logrus.Fatalln("example config should be set by build script!")
+	}
+	fout, err := os.Stdout, error(nil)
+	if fpath != "-" {
+		if _, err := os.Stat(fpath); err == nil {
+			logrus.Warnf("%s already exists, skipping", fpath)
+			return
+		}
+		if fout, err = os.Create(fpath); err != nil {
+			logrus.Errorf("Failed to create config file %s, error: %v", fpath, err)
+			return
+		}
+		defer fout.Close()
+	}
+	if _, err = fout.WriteString(exampleConfig); err != nil {
+		logrus.Errorf("Failed to write config file %s, error: %v", fpath, err)
+	} else if fout != os.Stdout {
+		logrus.Infof("Write example config file to %s", fpath)
+	}
 }
 
 func parseQueryFromCLI(cliArgs []string) []*model.PriceQuery {

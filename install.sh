@@ -55,8 +55,8 @@ execute() {
     binexe="${binexe}.exe"
   fi
   install "${srcdir}/${binexe}" "${BINDIR}/"
-  install "${srcdir}/token_ticker.example.yaml" "${BINDIR}/"
-  log_info "installed to ${BINDIR}/${binexe} and ${BINDIR}/token_ticker.example.yaml"
+  log_info "installed to ${BINDIR}/${binexe}"
+  log_info "run \"${BINDIR}/${binexe} --example-config-file\" to generate an example config file"
 }
 is_supported_platform() {
   platform=$1

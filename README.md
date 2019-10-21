@@ -66,17 +66,18 @@ Usage: tt [Options] [Exchange1.Token1 Exchange2.Token2 ...]
 Track token prices of your favorite exchanges in the terminal
 
 Options:
-  -v, --version              Show version number
-  -d, --debug                Enable debug mode
-  -l, --list-exchanges       List supported exchanges
-  -r, --refresh int          Auto refresh on every specified seconds, note every exchange has a rate limit,
-                             too frequent refresh may cause your IP banned by their servers
-  -c, --config-file string   Config file path, refer to "token_ticker.example.yaml" for the format,
-                             by default token-ticker uses "token_ticker.yml" in current directory or $HOME as config file
-  -s, --show strings         Only show comma-separated columns (default [Symbol,Price,%Change(1h),%Change(24h),Source,Updated])
-  -p, --proxy string         Proxy used when sending HTTP request
-                             (eg. "http://localhost:7777", "https://localhost:7777", "socks5://localhost:1080")
-  -t, --timeout int          HTTP request timeout in seconds (default 20)
+  -v, --Version                            Show Version number
+  -d, --debug                              Enable debug mode
+  -l, --list-exchanges                     List supported exchanges
+  -r, --refresh int                        Auto refresh on every specified seconds, note every exchange has a rate limit,
+                                           too frequent refresh may cause your IP banned by their servers
+  -c, --config-file string                 Config file path, use "--example-config-file <path>" to generate an example config file,
+                                           by default token-ticker uses "token_ticker.yml" in current directory or $HOME as config file
+      --example-config-file string[="-"]   Generate example config file to the specified file path, by default it outputs to stdout
+  -s, --show strings                       Only show comma-separated columns (default [Symbol,Price,%Change(1h),%Change(24h),Source,Updated])
+  -p, --proxy string                       Proxy used when sending HTTP request
+                                           (eg. "http://localhost:7777", "https://localhost:7777", "socks5://localhost:1080")
+  -t, --timeout int                        HTTP request timeout in seconds (default 20)
 
 Exchange.Token Pairs:
   Specify which exchange and token pair to query, different exchanges use different forms to express tokens/trading pairs, refer to their URLs to find the format, eg. to get BitCoin price from Bitfinex and CoinMarketCap you should use query string "Bitfinex.BTCUSDT CoinMarketCap.Bitcoin"
@@ -117,13 +118,11 @@ $ tt -c token_ticker.example.yaml
 Token-ticker can also read options from configuration file, see the attached [token_ticker.example.yaml](token_ticker.example.yaml) for its format. By default token-ticker searches configuration file `token_ticker.yml` in current directory and `$HOME`, so you can compose a `token_ticker.yml`, place it in your `$HOME` and just type `tt` to get all pre-defined prices. 
 
 ```bash
-$ # Create your configuration file by copying attached `token_ticker.example.yaml` to `token_ticker.yaml`
-$ cp token_ticker.example.yaml token_ticker.yaml
-$ # Or copy to your $HOME directory
-$ cp token_ticker.example.yaml ~/token_ticker.yaml
+$ # Generate an example config file to my $HOME directory
+$ tt --example-config-file=$HOME/token_ticker.yml
 $
 $
-$ # Token-ticker will search for configuration file "token_ticker.yml" in current directory and "$HOME" by default
+$ # token-ticker will search for configuration file "token_ticker.yml" in current directory and "$HOME" by default
 $ tt       # <--- This is also the way I used most freqently 
 ```
 
