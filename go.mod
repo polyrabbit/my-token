@@ -4,7 +4,7 @@ require (
 	github.com/buger/jsonparser v0.0.0-20180318095312-2cac668e8456
 	github.com/fatih/color v0.0.0-20180213133403-507f6050b856
 	github.com/gorilla/websocket v1.4.1 // indirect
-	github.com/gosuri/uilive v0.0.3
+	github.com/gosuri/uilive v0.0.4
 	github.com/konsorten/go-windows-terminal-sequences v1.0.2 // indirect
 	github.com/magiconair/properties v1.8.1 // indirect
 	github.com/mattn/go-colorable v0.0.0-20180310133214-efa589957cd0
