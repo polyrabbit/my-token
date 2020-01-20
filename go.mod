@@ -12,7 +12,7 @@ require (
 	github.com/mattn/go-runewidth v0.0.0-20180408055351-ce7b0b5c7b45 // indirect
 	github.com/olekukonko/tablewriter v0.0.0-20180506121414-d4647c9c7a84
 	github.com/pelletier/go-toml v1.5.0 // indirect
-	github.com/preichenberger/go-coinbasepro/v2 v2.0.4
+	github.com/preichenberger/go-coinbasepro/v2 v2.0.5
 	github.com/sirupsen/logrus v1.4.2
 	github.com/spf13/afero v1.2.2 // indirect
 	github.com/spf13/jwalterweatherman v1.1.0 // indirect
