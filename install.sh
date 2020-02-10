@@ -226,7 +226,7 @@ uname_arch_check() {
 untar() {
   tarball=$1
   case "${tarball}" in
-    *.tar.gz | *.tgz) tar -xzf "${tarball}" ;;
+    *.tar.gz | *.tgz) tar -xmzf "${tarball}" ;;
     *.tar) tar -xf "${tarball}" ;;
     *.zip) unzip "${tarball}" ;;
     *)
