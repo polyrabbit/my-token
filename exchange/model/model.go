@@ -5,6 +5,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/polyrabbit/my-token/http"
 	"github.com/sirupsen/logrus"
 )
 
@@ -45,6 +46,20 @@ func getExchangeClient(exchangeName string) ExchangeClient {
 func GetAllNames() []string {
 	sort.Strings(officialExchangeNames)
 	return officialExchangeNames
+}
+
+// Used to init clients that need configuration, such as api keys
+type initer interface {
+	Init()
+}
+
+func Init() {
+	http.Init()
+	for _, client := range exchangeRegistry {
+		if unInitialized, ok := client.(initer); ok {
+			unInitialized.Init()
+		}
+	}
 }
 
 type PriceQuery struct {

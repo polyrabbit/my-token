@@ -13,11 +13,11 @@ env:
 
 script:
   - go test -v -race -coverprofile=coverage.txt -covermode=atomic ./...
-  - go run *.go -d -c token_ticker.example.yaml
+  - go run . -d -c my_token.example.yaml
 
 after_success:
   # Ensure download script works
-  - curl -sfL https://raw.githubusercontent.com/polyrabbit/token-ticker/master/install.sh | bash -s -- -d
+  - curl -sfL https://raw.githubusercontent.com/polyrabbit/my-token/master/install.sh | bash -s -- -d
   - bash <(curl -s https://codecov.io/bash)
 
 before_deploy:
@@ -25,7 +25,7 @@ before_deploy:
   - go get -u github.com/mitchellh/gox
   - go get -u github.com/tcnksm/ghr
 
-  - gox -output "release/tt_{{.OS}}_{{.Arch}}/tt" -ldflags "-X github.com/polyrabbit/token-ticker/config.Rev=`git rev-parse --short HEAD` -X github.com/polyrabbit/token-ticker/config.Version=`git describe --tags | cut -dv -f 2` -X 'github.com/polyrabbit/token-ticker/config.exampleConfig=`cat token_ticker.example.yaml`'" -verbose
+  - gox -output "release/mt_{{.OS}}_{{.Arch}}/mt" -ldflags "-X github.com/polyrabbit/my-token/config.Rev=`git rev-parse --short HEAD` -X github.com/polyrabbit/my-token/config.Version=`git describe --tags | cut -dv -f 2` -X 'github.com/polyrabbit/my-token/config.exampleConfig=`cat my_token.example.yaml`'" -verbose
   - mkdir -p dist
   - for f in release/*; do
       if [[ -d "$f" ]]; then

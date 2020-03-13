@@ -5,10 +5,10 @@ import (
 	"os"
 	"strings"
 
-	"github.com/polyrabbit/token-ticker/exchange/model"
+	"github.com/polyrabbit/my-token/exchange/model"
 
 	"github.com/mattn/go-colorable"
-	"github.com/polyrabbit/token-ticker/writer"
+	"github.com/polyrabbit/my-token/writer"
 	"github.com/sirupsen/logrus"
 	"github.com/spf13/pflag"
 	"github.com/spf13/viper"
@@ -21,7 +21,7 @@ var (
 	exampleConfig string
 )
 
-func init() {
+func Parse() {
 	// Set log format
 	formatter := &logrus.TextFormatter{
 		FullTimestamp:   true,
@@ -41,7 +41,7 @@ func init() {
 	var configFile string
 	pflag.StringVarP(&configFile, "config-file", "c", "", `Config file path, use "--example-config-file <path>" `+
 		"to generate an example config file,\n"+
-		"by default token-ticker uses \"token_ticker.yml\" in current directory or $HOME as config file")
+		"by default my-token uses \"my_token.yml\" in current directory or $HOME as config file")
 	var exampleConfigFile string
 	pflag.StringVar(&exampleConfigFile, "example-config-file", "",
 		"Generate example config file to the specified file path, by default it outputs to stdout")
@@ -83,10 +83,11 @@ func init() {
 
 	viper.BindPFlags(pflag.CommandLine)
 	// Set configure file
-	viper.SetConfigName("token_ticker") // name of config file (without extension)
-	viper.AddConfigPath(".")            // path to look for the config file in
-	viper.AddConfigPath("$HOME")        // optionally look for config in the HOME directory
-	viper.AddConfigPath("/etc")         // and /etc
+	viper.SetConfigName("my_token") // name of config file (without extension)
+	// viper.SetConfigName("token_ticker") // for compatibility reason
+	viper.AddConfigPath(".")     // path to look for the config file in
+	viper.AddConfigPath("$HOME") // optionally look for config in the HOME directory
+	viper.AddConfigPath("/etc")  // and /etc
 	if configFile != "" {
 		viper.SetConfigFile(configFile)
 	}
@@ -113,10 +114,10 @@ func showUsageAndExit() {
 	fmt.Fprintln(os.Stderr, "\nTrack token prices of your favorite exchanges in the terminal")
 	fmt.Fprintln(os.Stderr, "\nOptions:")
 	pflag.PrintDefaults()
-	fmt.Fprintln(os.Stderr, "\nExchange.Token Pairs:")
+	fmt.Fprintln(os.Stderr, "\nSpace-separated exchange.token pairs:")
 	fmt.Fprintln(os.Stderr, "  Specify which exchange and token pair to query, different exchanges use different forms to express tokens/trading pairs, refer to their URLs to find the format"+
 		" (eg. to get BitCoin price from Bitfinex and CoinMarketCap you should use query string \"Bitfinex.BTCUSDT CoinMarketCap.Bitcoin\").")
-	fmt.Fprintln(os.Stderr, "\nFind help/updates from here - https://github.com/polyrabbit/token-ticker")
+	fmt.Fprintln(os.Stderr, "\nFind help/updates from here - https://github.com/polyrabbit/my-token")
 	os.Exit(0)
 }
 

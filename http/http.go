@@ -6,20 +6,20 @@ import (
 	"net/url"
 	"time"
 
-	"github.com/spf13/viper"
-
-	_ "github.com/polyrabbit/token-ticker/config" // config should be initialized first
 	"github.com/sirupsen/logrus"
+	"github.com/spf13/viper"
 )
 
-// Thread save
-var HTTPClient *http.Client
+// Thread safe
+var HTTPClient = http.DefaultClient
 
-func init() {
+func Init() {
 	timeout := viper.GetInt("timeout")
-	logrus.Debugf("HTTP request timeout is set to %d seconds", timeout)
-	HTTPClient = &http.Client{
-		Timeout: time.Duration(timeout) * time.Second,
+	if timeout != 0 {
+		logrus.Debugf("HTTP request timeout is set to %d seconds", timeout)
+		HTTPClient = &http.Client{
+			Timeout: time.Duration(timeout) * time.Second,
+		}
 	}
 
 	rawProxyURL := viper.GetString("proxy")
@@ -63,7 +63,7 @@ func Get(rawURL string, params map[string]string) ([]byte, error) {
 	if err != nil {
 		return nil, err
 	}
-	req.Header.Set("User-Agent", "Mozilla/5.0 (compatible; token-ticker; +https://github.com/polyrabbit/token-ticker)")
+	req.Header.Set("User-Agent", "Mozilla/5.0 (compatible; my-token; +https://github.com/polyrabbit/my-token)")
 	req.Header.Set("Cache-Control", "no-cache")
 	req.Header.Add("Cache-Control", "no-store")
 	req.Header.Add("Cache-Control", "must-revalidate")

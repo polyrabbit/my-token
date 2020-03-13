@@ -6,9 +6,8 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/polyrabbit/token-ticker/exchange/model"
-
-	"github.com/polyrabbit/token-ticker/http"
+	"github.com/polyrabbit/my-token/exchange/model"
+	"github.com/polyrabbit/my-token/http"
 )
 
 // https://coinmarketcap.com/api/
@@ -43,6 +42,10 @@ type notFoundResponse struct {
 
 func (client *coinMarketCapClient) GetName() string {
 	return "CoinMarketCap"
+}
+
+func (client *coinMarketCapClient) Init() {
+	// TODO: coinmarketcap needs api key now, init it here.
 }
 
 func (client *coinMarketCapClient) GetSymbolPrice(symbol string) (*model.SymbolPrice, error) {

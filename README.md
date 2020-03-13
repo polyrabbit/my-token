@@ -1,16 +1,16 @@
-# Token Ticker
+# My Token
 
-[![Build Status](https://travis-ci.org/polyrabbit/token-ticker.svg?branch=master)](https://travis-ci.org/polyrabbit/token-ticker)
-[![codecov](https://codecov.io/gh/polyrabbit/token-ticker/branch/master/graph/badge.svg)](https://codecov.io/gh/polyrabbit/token-ticker)
+[![Build Status](https://travis-ci.org/polyrabbit/my-token.svg?branch=master)](https://travis-ci.org/polyrabbit/my-token)
+[![codecov](https://codecov.io/gh/polyrabbit/my-token/branch/master/graph/badge.svg)](https://codecov.io/gh/polyrabbit/my-token)
 [![License: MIT](https://img.shields.io/badge/License-MIT-brightgreen.svg)](https://opensource.org/licenses/MIT)
-[![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](https://github.com/polyrabbit/token-ticker/pulls)
-[![Go Report Card](https://goreportcard.com/badge/github.com/polyrabbit/token-ticker)](https://goreportcard.com/report/github.com/polyrabbit/token-ticker)
+[![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](https://github.com/polyrabbit/my-token/pulls)
+[![Go Report Card](https://goreportcard.com/badge/github.com/polyrabbit/my-token)](https://goreportcard.com/report/github.com/polyrabbit/my-token)
 
 > NEVER LEAVE YOUR TERMINAL
 
-![token-ticker](https://user-images.githubusercontent.com/2657334/40175207-ff9e6504-5a09-11e8-9a3d-a887ebc4895a.png)
+![my-token](https://user-images.githubusercontent.com/2657334/40175207-ff9e6504-5a09-11e8-9a3d-a887ebc4895a.png)
 
-Token-ticker (or `tt` for short) is a CLI tool for those who are both **Crypto investors** and **Engineers**, allowing you to track token prices and changes in your favorite exchanges on the terminal.
+my-token (or `mt` for short) is a CLI tool for those who are both **Crypto investors** and **Engineers**, allowing you to track token prices and changes in your favorite exchanges on the terminal.
 
 ### Features
 
@@ -45,23 +45,23 @@ Token-ticker (or `tt` for short) is a CLI tool for those who are both **Crypto i
 
 #### `curl | bash` style downloads to `/usr/local/bin`
 ```bash
-$ curl -sfL https://raw.githubusercontent.com/polyrabbit/token-ticker/master/install.sh | bash -s -- -d -b /usr/local/bin
+$ curl -sfL https://raw.githubusercontent.com/polyrabbit/my-token/master/install.sh | bash -s -- -d -b /usr/local/bin
 ```
 
 #### Using [Go](https://golang.org/) (1.12+)
 ```bash
-$ go get -u github.com/polyrabbit/token-ticker
+$ go get -u github.com/polyrabbit/my-token
 ```
 
 #### Manually
-Download from [release page](https://github.com/polyrabbit/token-ticker/releases/latest) and extact the tarbal into /usr/bin or your `PATH` directory.
+Download from [release page](https://github.com/polyrabbit/my-token/releases/latest) and extract the tarbal into /usr/bin or your `PATH` directory.
 
 ### Usage
 
 ```
-$ tt --help
+$ mt --help
 
-Usage: tt [Options] [Exchange1.Token1 Exchange2.Token2 ...]
+Usage: mt [Options] [Exchange1.Token1 Exchange2.Token2 ...]
 
 Track token prices of your favorite exchanges in the terminal
 
@@ -72,23 +72,23 @@ Options:
   -r, --refresh int                        Auto refresh on every specified seconds, note every exchange has a rate limit,
                                            too frequent refresh may cause your IP banned by their servers
   -c, --config-file string                 Config file path, use "--example-config-file <path>" to generate an example config file,
-                                           by default token-ticker uses "token_ticker.yml" in current directory or $HOME as config file
+                                           by default my-token uses "my_token.yml" in current directory or $HOME as config file
       --example-config-file string[="-"]   Generate example config file to the specified file path, by default it outputs to stdout
   -s, --show strings                       Only show comma-separated columns (default [Symbol,Price,%Change(1h),%Change(24h),Source,Updated])
   -p, --proxy string                       Proxy used when sending HTTP request
                                            (eg. "http://localhost:7777", "https://localhost:7777", "socks5://localhost:1080")
   -t, --timeout int                        HTTP request timeout in seconds (default 20)
 
-Exchange.Token Pairs:
+Space-separated exchange.token pairs:
   Specify which exchange and token pair to query, different exchanges use different forms to express tokens/trading pairs, refer to their URLs to find the format, eg. to get BitCoin price from Bitfinex and CoinMarketCap you should use query string "Bitfinex.BTCUSDT CoinMarketCap.Bitcoin"
 
-Find help/updates from here - https://github.com/polyrabbit/token-ticker
+Find help/updates from here - https://github.com/polyrabbit/my-token
 ```
 
 * #### Display latest market prices for for `BNBUSDT`, `BTCUSDT` from `Binance` and `HTUSDT` from `Huobi`
 
 ```bash
-$ tt binance.BNBUSDT binance.BTCUSDT Huobi.HTUSDT
+$ mt binance.BNBUSDT binance.BTCUSDT Huobi.HTUSDT
 ```
 
 Here `Binance` and `Huobi` can be replaced by any supported exchanges, and different exchanges use different forms to express tokens/symbols/markets, refer to their URLs to find the format.
@@ -96,7 +96,7 @@ Here `Binance` and `Huobi` can be replaced by any supported exchanges, and diffe
 * #### Auto-refresh on every 10 seconds
 
 ```bash
-$ tt -r 10 binance.BNBUSDT binance.BTCUSDT Huobi.HTUSDT
+$ mt -r 10 binance.BNBUSDT binance.BTCUSDT Huobi.HTUSDT
 ```
 
 NOTE: some exchanges has a strict rate limit, too frequent refresh may cause your IP banned by their servers.
@@ -104,26 +104,26 @@ NOTE: some exchanges has a strict rate limit, too frequent refresh may cause you
 * #### Show specified columns only
 
 ```bash
-$ tt --show Symbol,Price binance.BTCUSDT
+$ mt --show Symbol,Price binance.BTCUSDT
 ```
 
-See issue [#3](https://github.com/polyrabbit/token-ticker/issues/3) for a discussion on this feature.
+See issue [#3](https://github.com/polyrabbit/my-token/issues/3) for a discussion on this feature.
 
 * #### Run with options from a configuration file
 
 ```bash
-$ tt -c token_ticker.example.yaml
+$ mt -c my_token.example.yaml
 ```
 
-Token-ticker can also read options from configuration file, see the attached [token_ticker.example.yaml](token_ticker.example.yaml) for its format. By default token-ticker searches configuration file `token_ticker.yml` in current directory and `$HOME`, so you can compose a `token_ticker.yml`, place it in your `$HOME` and just type `tt` to get all pre-defined prices. 
+my-token can also read options from configuration file, see the attached [my_token.example.yaml](my_token.example.yaml) for its format. By default my-token searches configuration file `my_token.yml` in current directory and `$HOME`, so you can compose a `my_token.yml`, place it in your `$HOME` and just type `mt` to get all pre-defined prices. 
 
 ```bash
 $ # Generate an example config file to my $HOME directory
-$ tt --example-config-file=$HOME/token_ticker.yml
+$ mt --example-config-file=$HOME/my_token.yml
 $
 $
-$ # token-ticker will search for configuration file "token_ticker.yml" in current directory and "$HOME" by default
-$ tt       # <--- This is also the way I used most freqently 
+$ # my-token will search for configuration file "my_token.yml" in current directory and "$HOME" by default
+$ mt       # <--- This is also the way I used most freqently 
 ```
 
 ### Thanks
@@ -132,4 +132,4 @@ $ tt       # <--- This is also the way I used most freqently
 
 ### License
 
-The MIT License (MIT) - see [LICENSE.md](https://github.com/polyrabbit/token-ticker/blob/master/LICENSE) for more details
+The MIT License (MIT) - see [LICENSE.md](https://github.com/polyrabbit/my-token/blob/master/LICENSE) for more details

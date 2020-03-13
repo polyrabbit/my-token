@@ -7,9 +7,10 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/polyrabbit/token-ticker/exchange/model"
+	"github.com/polyrabbit/my-token/http"
 
-	"github.com/polyrabbit/token-ticker/http"
+	"github.com/polyrabbit/my-token/exchange/model"
+
 	"github.com/preichenberger/go-coinbasepro/v2"
 	"github.com/sirupsen/logrus"
 )
@@ -20,8 +21,11 @@ type coinbaseClient struct {
 
 func NewCoinBaseClient() *coinbaseClient {
 	client := coinbasepro.NewClient()
-	client.HTTPClient = http.HTTPClient
 	return &coinbaseClient{coinbasepro: client}
+}
+
+func (client *coinbaseClient) Init() {
+	client.coinbasepro.HTTPClient = http.HTTPClient
 }
 
 func (client *coinbaseClient) GetName() string {

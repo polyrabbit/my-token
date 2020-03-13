@@ -7,7 +7,7 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/polyrabbit/token-ticker/exchange/model"
+	"github.com/polyrabbit/my-token/exchange/model"
 
 	"github.com/fatih/color"
 	"github.com/gosuri/uilive"

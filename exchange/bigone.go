@@ -9,9 +9,9 @@ import (
 	"strings"
 	"time"
 
-	"github.com/polyrabbit/token-ticker/exchange/model"
+	"github.com/polyrabbit/my-token/exchange/model"
 
-	"github.com/polyrabbit/token-ticker/http"
+	"github.com/polyrabbit/my-token/http"
 	"github.com/sirupsen/logrus"
 )
 
