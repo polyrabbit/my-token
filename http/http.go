@@ -8,7 +8,7 @@ import (
 
 	"github.com/spf13/viper"
 
-	_ "github.com/polyrabbit/token-ticker/config" // config should be initialized first
+	_ "github.com/polyrabbit/my-token/config" // config should be initialized first
 	"github.com/sirupsen/logrus"
 )
 
@@ -63,7 +63,7 @@ func Get(rawURL string, params map[string]string) ([]byte, error) {
 	if err != nil {
 		return nil, err
 	}
-	req.Header.Set("User-Agent", "Mozilla/5.0 (compatible; token-ticker; +https://github.com/polyrabbit/token-ticker)")
+	req.Header.Set("User-Agent", "Mozilla/5.0 (compatible; my-token; +https://github.com/polyrabbit/my-token)")
 	req.Header.Set("Cache-Control", "no-cache")
 	req.Header.Add("Cache-Control", "no-store")
 	req.Header.Add("Cache-Control", "must-revalidate")

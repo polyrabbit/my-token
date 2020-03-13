@@ -6,20 +6,19 @@ import (
 	"strings"
 	"time"
 
-	_ "github.com/polyrabbit/token-ticker/exchange"
-	"github.com/polyrabbit/token-ticker/exchange/model"
-
 	"github.com/fatih/color"
 	"github.com/mattn/go-colorable"
-	"github.com/polyrabbit/token-ticker/config"
-	"github.com/polyrabbit/token-ticker/http"
-	"github.com/polyrabbit/token-ticker/writer"
+	"github.com/polyrabbit/my-token/config"
+	_ "github.com/polyrabbit/my-token/exchange"
+	"github.com/polyrabbit/my-token/exchange/model"
+	"github.com/polyrabbit/my-token/http"
+	"github.com/polyrabbit/my-token/writer"
 	"github.com/sirupsen/logrus"
 	"github.com/spf13/viper"
 )
 
 func checkForUpdate() {
-	const releaseURL = "https://api.github.com/repos/polyrabbit/token-ticker/releases/latest"
+	const releaseURL = "https://api.github.com/repos/polyrabbit/my-token/releases/latest"
 	respBytes, err := http.Get(releaseURL, nil)
 	if err != nil {
 		logrus.Debugf("Failed to fetch Github release page, error %v", err)
@@ -38,7 +37,7 @@ func checkForUpdate() {
 	logrus.Debugf("Latest release tag is %s", releaseJSON.Tag)
 	if config.Version != "" && releaseJSON.Tag != config.Version {
 		color.New(color.FgYellow).Fprintf(os.Stderr,
-			"token-ticker %s is available (you're using %s), get the latest release from: %s\n",
+			"my-token %s is available (you're using %s), get the latest release from: %s\n",
 			releaseJSON.Tag, config.Version, releaseJSON.URL)
 	}
 }
@@ -46,6 +45,7 @@ func checkForUpdate() {
 func main() {
 	go checkForUpdate()
 
+	config.Parse()
 	refreshInterval := viper.GetInt("refresh")
 	if refreshInterval != 0 {
 		logrus.Infof("Auto refresh on every %d seconds", refreshInterval)
