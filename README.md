@@ -8,7 +8,7 @@
 
 > NEVER LEAVE YOUR TERMINAL
 
-![my-token](https://user-images.githubusercontent.com/2657334/40175207-ff9e6504-5a09-11e8-9a3d-a887ebc4895a.png)
+![my-token](https://user-images.githubusercontent.com/2657334/76717485-8560d280-676e-11ea-94af-54a5e10e9b25.png)
 
 my-token (or `mt` for short) is a CLI tool for those who are both **Crypto investors** and **Engineers**, allowing you to track token prices and changes in your favorite exchanges on the terminal.
 

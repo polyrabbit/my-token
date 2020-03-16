@@ -7,10 +7,8 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/polyrabbit/my-token/http"
-
 	"github.com/polyrabbit/my-token/exchange/model"
-
+	"github.com/polyrabbit/my-token/http"
 	"github.com/preichenberger/go-coinbasepro/v2"
 	"github.com/sirupsen/logrus"
 )
