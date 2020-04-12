@@ -1,6 +1,7 @@
 package http
 
 import (
+	"fmt"
 	"io/ioutil"
 	"net/http"
 	"net/url"
@@ -43,23 +44,24 @@ type HTTPError struct {
 }
 
 func (e *HTTPError) Error() string {
-	return e.Status
+	return "HTTP " + e.Status + ", body " + string(e.Body)
 }
 
 func Get(rawURL string, params map[string]string) ([]byte, error) {
-	parsedURL, err := url.Parse(rawURL)
-	if err != nil {
-		logrus.Fatalln(err)
-	}
 	if params != nil {
+		parsedURL, err := url.Parse(rawURL)
+		if err != nil {
+			return nil, fmt.Errorf("parse url %s: %w", rawURL, err)
+		}
 		query := url.Values{}
 		for k, v := range params {
 			query.Set(k, v)
 		}
 		parsedURL.RawQuery = query.Encode()
+		rawURL = parsedURL.String()
 	}
 
-	req, err := http.NewRequest("GET", parsedURL.String(), nil)
+	req, err := http.NewRequest("GET", rawURL, nil)
 	if err != nil {
 		return nil, err
 	}
@@ -78,7 +80,8 @@ func Get(rawURL string, params map[string]string) ([]byte, error) {
 		return nil, err
 	}
 	if !(resp.StatusCode >= 200 && resp.StatusCode < 300) {
-		return nil, &HTTPError{resp.Status, respBytes}
+		// Most non-200 responses have valid json body
+		return respBytes, &HTTPError{resp.Status, respBytes}
 	}
 	return respBytes, err
 }

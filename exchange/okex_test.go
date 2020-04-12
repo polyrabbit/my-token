@@ -2,6 +2,7 @@ package exchange
 
 import (
 	"testing"
+	"time"
 )
 
 func TestOKExClient(t *testing.T) {
@@ -9,7 +10,7 @@ func TestOKExClient(t *testing.T) {
 	var client = new(okexClient)
 
 	t.Run("GetKlinePrice", func(t *testing.T) {
-		_, err := client.GetKlinePrice("bTC_usdt", "1min", 60)
+		_, err := client.GetKlinePrice("bTC_usdt", "60", time.Now().Add(-time.Hour), time.Now())
 
 		if err != nil {
 			t.Fatalf("Unexpected error: %v", err)
@@ -17,7 +18,7 @@ func TestOKExClient(t *testing.T) {
 	})
 
 	t.Run("GetKlinePrice of unknown symbol", func(t *testing.T) {
-		_, err := client.GetKlinePrice("abcedfg", "1min", 60)
+		_, err := client.GetKlinePrice("abcedfg", "60", time.Now().Add(-time.Hour), time.Now())
 
 		if err == nil {
 			t.Fatalf("Expecting error when fetching unknown price, but get nil")

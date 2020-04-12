@@ -9,10 +9,10 @@ import (
 	"time"
 
 	"github.com/polyrabbit/my-token/exchange/model"
-
-	"github.com/buger/jsonparser"
 	"github.com/polyrabbit/my-token/http"
+
 	"github.com/sirupsen/logrus"
+	"github.com/tidwall/gjson"
 )
 
 // https://www.kraken.com/help/api
@@ -27,20 +27,16 @@ func (client *krakenClient) GetName() string {
 	return "Kraken"
 }
 
-/**
-Read response and check any potential errors
-*/
-func (client *krakenClient) readResponse(respBytes []byte) ([]byte, error) {
-	var errorMsg []string
-	jsonparser.ArrayEach(respBytes, func(value []byte, dataType jsonparser.ValueType, offset int, err error) {
-		if dataType == jsonparser.String {
-			errorMsg = append(errorMsg, string(value))
+// Check to see if we have error in the response
+func (client *krakenClient) extractError(respByte []byte) error {
+	errorArray := gjson.GetBytes(respByte, "error").Array()
+	if len(errorArray) > 0 {
+		errMsg := errorArray[0].Get("0").String()
+		if len(errMsg) != 0 {
+			return errors.New(errMsg)
 		}
-	}, "error")
-	if len(errorMsg) != 0 {
-		return nil, errors.New(strings.Join(errorMsg, ", "))
 	}
-	return respBytes, nil
+	return nil
 }
 
 func (client *krakenClient) GetKlinePrice(symbol string, since time.Time, interval int) (float64, error) {
@@ -50,55 +46,40 @@ func (client *krakenClient) GetKlinePrice(symbol string, since time.Time, interv
 		"since":    strconv.FormatInt(since.Unix(), 10),
 		"interval": strconv.Itoa(interval),
 	})
+	if err := client.extractError(respByte); err != nil {
+		return 0, fmt.Errorf("kraken get kline: %w", err)
+	}
 	if err != nil {
 		return 0, err
 	}
 
-	content, err := client.readResponse(respByte)
-	if err != nil {
-		return 0, err
-	}
-	// jsonparser saved my life, no need to struggle with different/weird response types
-	klineBytes, dataType, _, err := jsonparser.Get(content, "result", symbolUpperCase, "[0]")
-	if err != nil {
-		return 0, err
-	}
-	if dataType != jsonparser.Array {
-		return 0, fmt.Errorf("kline should be an array, getting %s", dataType)
+	// gjson saved my life, no need to struggle with different/weird response types
+	candleV := gjson.GetBytes(respByte, fmt.Sprintf("result.%s.0", strings.ToUpper(symbol))).Array()
+	if len(candleV) != 8 {
+		return 0, fmt.Errorf("kraken malformed kline response, expecting 8 elements, got %d", len(candleV))
 	}
 
-	timestamp, err := jsonparser.GetInt(klineBytes, "[0]")
-	if err != nil {
-		return 0, err
-	}
-	openPrice, err := jsonparser.GetString(klineBytes, "[1]")
-	if err != nil {
-		return 0, err
-	}
+	timestamp := candleV[0].Int()
+	openPrice := candleV[1].Float()
 	logrus.Debugf("%s - Kline for %s uses open price at %s", client.GetName(), since.Local(),
 		time.Unix(timestamp, 0).Local())
-	return strconv.ParseFloat(openPrice, 64)
+	return openPrice, nil
 }
 
 func (client *krakenClient) GetSymbolPrice(symbol string) (*model.SymbolPrice, error) {
 	respByte, err := http.Get(krakenBaseApi+"Ticker", map[string]string{"pair": strings.ToUpper(symbol)})
+	if err := client.extractError(respByte); err != nil {
+		return nil, fmt.Errorf("kraken get ticker: %w", err)
+	}
 	if err != nil {
 		return nil, err
 	}
 
-	content, err := client.readResponse(respByte)
-	if err != nil {
-		return nil, err
+	lastPriceV := gjson.GetBytes(respByte, fmt.Sprintf("result.%s.c.0", strings.ToUpper(symbol)))
+	if !lastPriceV.Exists() {
+		return nil, fmt.Errorf("kraken malformed ticker response, missing key %s", fmt.Sprintf("result.%s.c.0", strings.ToUpper(symbol)))
 	}
-
-	lastPriceString, err := jsonparser.GetString(content, "result", strings.ToUpper(symbol), "c", "[0]")
-	if err != nil {
-		return nil, err
-	}
-	lastPrice, err := strconv.ParseFloat(lastPriceString, 64)
-	if err != nil {
-		return nil, err
-	}
+	lastPrice := lastPriceV.Float()
 
 	time.Sleep(time.Second) // API call rate limit
 	var (
@@ -121,7 +102,7 @@ func (client *krakenClient) GetSymbolPrice(symbol string) (*model.SymbolPrice, e
 
 	return &model.SymbolPrice{
 		Symbol:           symbol,
-		Price:            lastPriceString,
+		Price:            lastPriceV.String(),
 		UpdateAt:         time.Now(),
 		Source:           client.GetName(),
 		PercentChange1h:  percentChange1h,

@@ -1,146 +1,118 @@
 package exchange
 
 import (
-	"encoding/json"
+	"errors"
 	"fmt"
 	"math"
 	"strconv"
-	"strings"
 	"time"
 
 	"github.com/polyrabbit/my-token/exchange/model"
-
 	"github.com/polyrabbit/my-token/http"
 	"github.com/sirupsen/logrus"
+	"github.com/tidwall/gjson"
 )
 
-// https://github.com/okcoin-okex/API-docs-OKEx.com
-const okexBaseApi = "https://www.okex.com/api/v1"
+// https://www.okex.com/docs/zh/#spot-some
+const okexBaseApi = "https://www.okex.com/api/spot/v3/instruments/"
 
 type okexClient struct {
 	AccessKey string
 	SecretKey string
 }
 
-type okexErrorResponse struct {
-	ErrorCode int `json:"error_code"`
-}
-
-type okexTickerResponse struct {
-	okexErrorResponse
-	Date   int64 `json:",string"`
-	Ticker struct {
-		Last float64 `json:",string"`
-	}
-}
-
-type okexKlineResponse struct {
-	okexErrorResponse
-	Data [][]interface{}
-}
-
-func (resp *okexTickerResponse) getCommonResponse() okexErrorResponse {
-	return resp.okexErrorResponse
-}
-
-func (resp *okexTickerResponse) getInternalData() interface{} {
-	return resp
-}
-
-func (resp *okexKlineResponse) getCommonResponse() okexErrorResponse {
-	return resp.okexErrorResponse
-}
-
-func (resp *okexKlineResponse) getInternalData() interface{} {
-	return &resp.Data
-}
-
-// Any way to hold the common response, instead of adding an interface here?
-type okexCommonResponseProvider interface {
-	getCommonResponse() okexErrorResponse
-	getInternalData() interface{}
-}
-
 func (client *okexClient) GetName() string {
 	return "OKEx"
 }
 
-func (client *okexClient) decodeResponse(respBytes []byte, respJSON okexCommonResponseProvider) error {
-	// What a messy
-	respBody := strings.TrimSpace(string(respBytes))
-	if respBody[0] == '[' {
-		return json.Unmarshal(respBytes, respJSON.getInternalData())
-	}
-
-	if err := json.Unmarshal(respBytes, &respJSON); err != nil {
-		return err
-	}
-
-	// All I need is to get the common part, I don't like this
-	commonResponse := respJSON.getCommonResponse()
-	if commonResponse.ErrorCode != 0 {
-		return fmt.Errorf("error_code: %v", commonResponse.ErrorCode)
-	}
-	return nil
-}
-
-func (client *okexClient) GetKlinePrice(symbol, period string, size int) (float64, error) {
-	symbol = strings.ToLower(symbol)
-	respByte, err := http.Get(okexBaseApi+"/kline.do", map[string]string{
-		"symbol": symbol,
-		"type":   period,
-		"size":   strconv.Itoa(size),
+func (client *okexClient) GetKlinePrice(symbol, granularity string, start, end time.Time) (float64, error) {
+	respByte, err := http.Get(okexBaseApi+symbol+"/candles", map[string]string{
+		"granularity": granularity,
+		"start":       start.UTC().Format(time.RFC3339),
+		"end":         end.UTC().Format(time.RFC3339),
 	})
+	if err := client.extractError(respByte); err != nil {
+		return 0, fmt.Errorf("okex get candles: %w", err)
+	}
 	if err != nil {
-		return 0, err
+		return 0, fmt.Errorf("okex get candles: %w", err)
 	}
 
-	var respJSON okexKlineResponse
-	err = client.decodeResponse(respByte, &respJSON)
-	if err != nil {
-		return 0, err
+	klines := gjson.ParseBytes(respByte).Array()
+	if len(klines) == 0 {
+		return 0, fmt.Errorf("okex got empty candles response")
 	}
-	logrus.Debugf("%s - Kline for %s*%v uses price at %s", client.GetName(), period, size,
-		time.Unix(int64(respJSON.Data[0][0].(float64))/1000, 0))
-	return strconv.ParseFloat(respJSON.Data[0][1].(string), 64)
+	lastKline := klines[len(klines)-1]
+	if len(lastKline.Array()) != 6 {
+		return 0, fmt.Errorf(`okex malformed kline response, got size %d`, len(lastKline.Array()))
+	}
+	updated := time.Now()
+	if parsed, err := time.Parse(time.RFC3339, lastKline.Get("0").String()); err == nil {
+		updated = parsed
+	}
+	logrus.Debugf("%s - Kline for %s seconds uses price at %s",
+		client.GetName(), granularity, updated.Local())
+	return lastKline.Get("1").Float(), nil
 }
 
 func (client *okexClient) GetSymbolPrice(symbol string) (*model.SymbolPrice, error) {
-	respByte, err := http.Get(okexBaseApi+"/ticker.do", map[string]string{"symbol": strings.ToLower(symbol)})
-	if err != nil {
-		return nil, err
+	respByte, err := http.Get(okexBaseApi+symbol+"/ticker", nil)
+	if err := client.extractError(respByte); err != nil {
+		// Extract more readable first if have
+		return nil, fmt.Errorf("okex get symbol price: %w", err)
 	}
-
-	var respJSON okexTickerResponse
-	err = client.decodeResponse(respByte, &respJSON)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("okex get symbol price: %w", err)
+	}
+	lastV := gjson.GetBytes(respByte, "last")
+	if !lastV.Exists() {
+		return nil, fmt.Errorf(`okex malformed get symbol price response, missing "last" key`)
+	}
+	lastPrice := lastV.Float()
+	updateAtV := gjson.GetBytes(respByte, "timestamp")
+	if !updateAtV.Exists() {
+		return nil, fmt.Errorf(`okex malformed get symbol price response, missing "timestamp" key`)
+	}
+	updateAt, err := time.Parse(time.RFC3339, updateAtV.String())
+	if err != nil {
+		return nil, fmt.Errorf("okex parse timestamp: %w", err)
 	}
 
 	var percentChange1h, percentChange24h = math.MaxFloat64, math.MaxFloat64
-	price1hAgo, err := client.GetKlinePrice(symbol, "1min", 60)
+	price1hAgo, err := client.GetKlinePrice(symbol, "60", updateAt.Add(-time.Hour), updateAt)
 	if err != nil {
 		logrus.Warnf("%s - Failed to get price 1 hour ago, error: %v\n", client.GetName(), err)
 	} else if price1hAgo != 0 {
-		percentChange1h = (respJSON.Ticker.Last - price1hAgo) / price1hAgo * 100
+		percentChange1h = (lastPrice - price1hAgo) / price1hAgo * 100
 	}
 
-	time.Sleep(time.Second)                                       // Limit 1 req/sec for Kline
-	price24hAgo, err := client.GetKlinePrice(symbol, "3min", 492) // Why not 480?
+	price24hAgo, err := client.GetKlinePrice(symbol, "900", updateAt.Add(-24*time.Hour), updateAt)
 	if err != nil {
 		logrus.Warnf("%s - Failed to get price 24 hours ago, error: %v\n", client.GetName(), err)
 	} else if price24hAgo != 0 {
-		percentChange24h = (respJSON.Ticker.Last - price24hAgo) / price24hAgo * 100
+		percentChange24h = (lastPrice - price24hAgo) / price24hAgo * 100
 	}
 
 	return &model.SymbolPrice{
 		Symbol:           symbol,
-		Price:            strconv.FormatFloat(respJSON.Ticker.Last, 'f', -1, 64),
-		UpdateAt:         time.Unix(respJSON.Date, 0),
+		Price:            strconv.FormatFloat(lastPrice, 'f', -1, 64),
+		UpdateAt:         updateAt,
 		Source:           client.GetName(),
 		PercentChange1h:  percentChange1h,
 		PercentChange24h: percentChange24h,
 	}, nil
+}
+
+// Check to see if we have error in the response
+func (client *okexClient) extractError(respByte []byte) error {
+	errorMsg := gjson.GetBytes(respByte, "error_message")
+	if !errorMsg.Exists() {
+		errorMsg = gjson.GetBytes(respByte, "message")
+	}
+	if len(errorMsg.String()) != 0 {
+		return errors.New(errorMsg.String())
+	}
+	return nil
 }
 
 func init() {
