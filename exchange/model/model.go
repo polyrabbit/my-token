@@ -1,6 +1,7 @@
 package model
 
 import (
+	"net"
 	"sort"
 	"strings"
 	"time"
@@ -75,10 +76,17 @@ func getPricesAsync(client ExchangeClient, symbols []string) []chan *SymbolPrice
 		doneCh := make(chan *SymbolPrice, 1)
 		waitingChans = append(waitingChans, doneCh)
 		go func(symbol string) {
+			start := time.Now()
 			sp, err := client.GetSymbolPrice(symbol)
 			if err != nil {
-				logrus.Warnf("Failed to get symbol price for %s from %s, error: %s", symbol, client.GetName(), err)
-				if strings.Contains(err.Error(), "i/o timeout") {
+				logEntry := logrus.WithError(err)
+				e, ok := err.(net.Error)
+				if ok && e.Timeout() {
+					elapsed := time.Since(start)
+					logEntry = logEntry.WithField("elapsed", elapsed.String())
+				}
+				logEntry.Warnf("Failed to get symbol price for %s from %s", symbol, client.GetName())
+				if ok && e.Timeout() {
 					logrus.Info("Maybe you are blocked by a firewall, try using --proxy to go through a proxy?")
 				}
 				close(doneCh) // close channel to indicate an error has happened, any other good idea?
