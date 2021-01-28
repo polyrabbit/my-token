@@ -7,7 +7,7 @@ import (
 
 func TestKrakenClient(t *testing.T) {
 
-	var client = new(krakenClient)
+	var client = registry.getClient("kraken").(*krakenClient)
 
 	t.Run("GetKlinePrice", func(t *testing.T) {
 		_, err := client.GetKlinePrice("EOSETh", time.Now().Add(-61*time.Minute), 1)

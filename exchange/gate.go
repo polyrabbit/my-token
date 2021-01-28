@@ -19,6 +19,7 @@ import (
 const gateBaseApi = "http://data.gateio.io/api2/1/"
 
 type gateClient struct {
+	*http.Client
 	AccessKey string
 	SecretKey string
 }
@@ -51,6 +52,10 @@ type gateCommonResponseProvider interface {
 	getCommonResponse() gateCommonResponse
 }
 
+func NewGateClient(httpClient *http.Client) ExchangeClient {
+	return &gateClient{Client: httpClient}
+}
+
 func (client *gateClient) GetName() string {
 	return "Gate"
 }
@@ -70,7 +75,7 @@ func (client *gateClient) decodeResponse(respBytes []byte, respJSON gateCommonRe
 
 func (client *gateClient) GetKlinePrice(symbol string, groupedSeconds int, size int) (float64, error) {
 	symbol = strings.ToLower(symbol)
-	respBytes, err := http.Get(gateBaseApi+"candlestick2/"+symbol, map[string]string{
+	respBytes, err := client.Get(gateBaseApi+"candlestick2/"+symbol, map[string]string{
 		"group_sec":  strconv.Itoa(groupedSeconds),
 		"range_hour": strconv.Itoa(size),
 	})
@@ -96,7 +101,7 @@ func (client *gateClient) GetKlinePrice(symbol string, groupedSeconds int, size 
 }
 
 func (client *gateClient) GetSymbolPrice(symbol string) (*model.SymbolPrice, error) {
-	respBytes, err := http.Get(gateBaseApi+"ticker/"+symbol, nil)
+	respBytes, err := client.Get(gateBaseApi+"ticker/"+symbol, nil)
 	if err != nil {
 		return nil, err
 	}
@@ -133,5 +138,5 @@ func (client *gateClient) GetSymbolPrice(symbol string) (*model.SymbolPrice, err
 }
 
 func init() {
-	model.Register(new(gateClient))
+	Register(NewGateClient)
 }

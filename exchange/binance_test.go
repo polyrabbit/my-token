@@ -6,7 +6,7 @@ import (
 
 func TestBinanceClient(t *testing.T) {
 
-	var client = &binanceClient{}
+	var client = registry.getClient("binance").(*binanceClient)
 
 	t.Run("Get24hStatistics", func(t *testing.T) {
 		stat, err := client.Get24hStatistics("ethbtc")

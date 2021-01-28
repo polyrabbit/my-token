@@ -19,8 +19,13 @@ import (
 const bitfinixBaseApi = "https://api.bitfinex.com/v2/" //Need api v2 to get kline
 
 type bitfinixClient struct {
+	*http.Client
 	AccessKey string
 	SecretKey string
+}
+
+func NewBitfinixClient(httpClient *http.Client) ExchangeClient {
+	return &bitfinixClient{Client: httpClient}
 }
 
 func (client *bitfinixClient) GetName() string {
@@ -46,7 +51,7 @@ func (client *bitfinixClient) checkError(respContent []byte) error {
 
 func (client *bitfinixClient) GetKlinePrice(symbol, frame string, start time.Time) (float64, error) {
 	candlePath := fmt.Sprintf("candles/trade:%s:t%s/hist", frame, symbol)
-	respBytes, err := http.Get(bitfinixBaseApi+candlePath, map[string]string{
+	respBytes, err := client.Get(bitfinixBaseApi+candlePath, map[string]string{
 		"start": strconv.FormatInt(start.Unix()*1000, 10),
 		"sort":  "1",
 		"limit": "1",
@@ -69,7 +74,7 @@ func (client *bitfinixClient) GetKlinePrice(symbol, frame string, start time.Tim
 
 func (client *bitfinixClient) GetSymbolPrice(symbol string) (*model.SymbolPrice, error) {
 	symbol = strings.ToUpper(symbol)
-	respBytes, err := http.Get(bitfinixBaseApi+"ticker/t"+symbol, nil)
+	respBytes, err := client.Get(bitfinixBaseApi+"ticker/t"+symbol, nil)
 	if err != nil {
 		return nil, err
 	}
@@ -117,5 +122,5 @@ func (client *bitfinixClient) GetSymbolPrice(symbol string) (*model.SymbolPrice,
 }
 
 func init() {
-	model.Register(&bitfinixClient{})
+	Register(NewBitfinixClient)
 }

@@ -8,7 +8,7 @@ func TestCoinMarketCapClient(t *testing.T) {
 
 	t.Skip("CoinMarketCap turns their api into private, need to investigate more.")
 
-	var client = new(coinMarketCapClient)
+	var client = registry.getClient("coinMarketCap").(*coinMarketCapClient)
 
 	t.Run("GetSymbolPrice", func(t *testing.T) {
 		sp, err := client.GetSymbolPrice("bitcoin")

@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/polyrabbit/my-token/exchange/model"
+
 	"github.com/polyrabbit/my-token/http"
 )
 
@@ -14,6 +15,7 @@ import (
 const coinmarketcapBaseApi = "https://api.coinmarketcap.com/v1/ticker/"
 
 type coinMarketCapClient struct {
+	*http.Client
 	AccessKey string
 	SecretKey string
 }
@@ -40,6 +42,10 @@ type notFoundResponse struct {
 	Error string
 }
 
+func NewCoinMarketCapClient(httpClient *http.Client) ExchangeClient {
+	return &coinMarketCapClient{Client: httpClient}
+}
+
 func (client *coinMarketCapClient) GetName() string {
 	return "CoinMarketCap"
 }
@@ -49,9 +55,9 @@ func (client *coinMarketCapClient) Init() {
 }
 
 func (client *coinMarketCapClient) GetSymbolPrice(symbol string) (*model.SymbolPrice, error) {
-	respBytes, err := http.Get(coinmarketcapBaseApi+symbol+"/", nil)
+	respBytes, err := client.Get(coinmarketcapBaseApi+symbol+"/", nil)
 	if err != nil {
-		if herr, ok := err.(*http.HTTPError); ok {
+		if herr, ok := err.(*http.ResponseError); ok {
 			resp := &notFoundResponse{}
 			if err := json.Unmarshal(herr.Body, resp); err != nil {
 				return nil, err
@@ -81,5 +87,5 @@ func (client *coinMarketCapClient) GetSymbolPrice(symbol string) (*model.SymbolP
 }
 
 func init() {
-	model.Register(new(coinMarketCapClient))
+	Register(NewCoinMarketCapClient)
 }

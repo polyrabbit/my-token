@@ -19,6 +19,7 @@ import (
 const binanceBaseApi = "https://api.binance.com"
 
 type binanceClient struct {
+	*http.Client
 	AccessKey string
 	SecretKey string
 }
@@ -45,6 +46,10 @@ type binance24hStatistics struct {
 	CloseTime          int64
 }
 
+func NewBinanceClient(httpClient *http.Client) ExchangeClient {
+	return &binanceClient{Client: httpClient}
+}
+
 func (client *binanceClient) GetName() string {
 	return "Binance"
 }
@@ -52,7 +57,7 @@ func (client *binanceClient) GetName() string {
 func (client *binanceClient) GetPrice1hAgo(symbol string) (float64, error) {
 	now := time.Now()
 	lastHour := now.Add(-1 * time.Hour)
-	respBytes, err := http.Get(binanceBaseApi+"/api/v1/klines", map[string]string{
+	respBytes, err := client.Get(binanceBaseApi+"/api/v1/klines", map[string]string{
 		"symbol":    strings.ToUpper(symbol),
 		"interval":  "1m",
 		"limit":     "1",
@@ -80,7 +85,7 @@ func (client *binanceClient) Get24hStatistics(symbol string) (*binance24hStatist
 	// always return an empty response, so the caller doesn't need to handle error
 	var respJSON binance24hStatistics
 
-	respBytes, err := http.Get(binanceBaseApi+"/api/v1/ticker/24hr", map[string]string{"symbol": strings.ToUpper(symbol)})
+	respBytes, err := client.Get(binanceBaseApi+"/api/v1/ticker/24hr", map[string]string{"symbol": strings.ToUpper(symbol)})
 	if err != nil {
 		return &respJSON, err
 	}
@@ -144,5 +149,5 @@ func (client *binanceClient) GetSymbolPrice(symbol string) (*model.SymbolPrice, 
 }
 
 func init() {
-	model.Register(&binanceClient{})
+	Register(NewBinanceClient)
 }

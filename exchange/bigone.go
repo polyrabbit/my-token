@@ -19,6 +19,7 @@ import (
 const bigOneBaseApi = "https://api.big.one/"
 
 type bigOneClient struct {
+	*http.Client
 	AccessKey string
 	SecretKey string
 }
@@ -48,6 +49,10 @@ type bigOneMarketResponse struct {
 	}
 }
 
+func NewBigOneClient(httpClient *http.Client) ExchangeClient {
+	return &bigOneClient{Client: httpClient}
+}
+
 func (client *bigOneClient) GetName() string {
 	return "BigONE"
 }
@@ -75,7 +80,7 @@ func (client *bigOneClient) SearchKlinePriceNear(klineIntervals [][]interface{},
 
 func (client *bigOneClient) GetSymbolPrice(symbol string) (*model.SymbolPrice, error) {
 	// One api to get all
-	respBytes, err := http.Get(binanceBaseApi+"/markets/"+strings.ToUpper(symbol), nil)
+	respBytes, err := client.Get(binanceBaseApi+"/markets/"+strings.ToUpper(symbol), nil)
 	if err != nil {
 		return nil, err
 	}

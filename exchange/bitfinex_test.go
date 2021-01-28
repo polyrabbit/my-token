@@ -6,7 +6,7 @@ import (
 
 func TestBitfinixClient(t *testing.T) {
 
-	var client = &bitfinixClient{}
+	var client = registry.getClient("Bitfinex").(*bitfinixClient)
 
 	t.Run("GetSymbolPrice", func(t *testing.T) {
 		sp, err := client.GetSymbolPrice("btcusd")

@@ -7,7 +7,7 @@ import (
 
 func TestCoinbaseClient(t *testing.T) {
 
-	var client = NewCoinBaseClient()
+	var client = registry.getClient("coinbase").(*coinbaseClient)
 
 	t.Run("GetSymbolPrice", func(t *testing.T) {
 		sp, err := client.GetSymbolPrice("BTC-USd")

@@ -6,7 +6,7 @@ import (
 
 func TestHitBtcClient(t *testing.T) {
 
-	var client = new(hitBtcClient)
+	var client = registry.getClient("hitbtc").(*hitBtcClient)
 
 	t.Run("GetKlinePrice", func(t *testing.T) {
 		_, err := client.GetKlinePrice("bTCusd", "M1", 60)

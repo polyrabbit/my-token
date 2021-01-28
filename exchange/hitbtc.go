@@ -20,6 +20,7 @@ const hitBtcBaseApi = "https://api.hitbtc.com/api/2/"
 // ZB api is very similar to OKEx, who copied whom?
 
 type hitBtcClient struct {
+	*http.Client
 	AccessKey string
 	SecretKey string
 }
@@ -58,6 +59,10 @@ type hitBtcCommonResponseProvider interface {
 	getCommonResponse() hitBtcCommonResponse
 }
 
+func NewHitBtcClient(httpClient *http.Client) ExchangeClient {
+	return &hitBtcClient{Client: httpClient}
+}
+
 func (client *hitBtcClient) GetName() string {
 	return "HitBTC"
 }
@@ -76,7 +81,7 @@ func (client *hitBtcClient) decodeResponse(respBytes []byte, respJSON hitBtcComm
 }
 
 func (client *hitBtcClient) GetKlinePrice(symbol, period string, limit int) (float64, error) {
-	respBytes, err := http.Get(hitBtcBaseApi+"public/candles/"+strings.ToUpper(symbol), map[string]string{
+	respBytes, err := client.Get(hitBtcBaseApi+"public/candles/"+strings.ToUpper(symbol), map[string]string{
 		"period": period,
 		"limit":  strconv.Itoa(limit),
 	})
@@ -93,7 +98,7 @@ func (client *hitBtcClient) GetKlinePrice(symbol, period string, limit int) (flo
 }
 
 func (client *hitBtcClient) GetSymbolPrice(symbol string) (*model.SymbolPrice, error) {
-	respBytes, err := http.Get(hitBtcBaseApi+"public/ticker/"+strings.ToUpper(symbol), nil)
+	respBytes, err := client.Get(hitBtcBaseApi+"public/ticker/"+strings.ToUpper(symbol), nil)
 	if err != nil {
 		return nil, err
 	}
@@ -133,5 +138,5 @@ func (client *hitBtcClient) GetSymbolPrice(symbol string) (*model.SymbolPrice, e
 }
 
 func init() {
-	model.Register(new(hitBtcClient))
+	Register(NewHitBtcClient)
 }

@@ -34,7 +34,7 @@ func Parse() {
 	showHelp := pflag.BoolP("help", "h", false, "Show usage message")
 	pflag.CommandLine.MarkHidden("help")
 	pflag.BoolP("debug", "d", false, "Enable debug mode")
-	showExchanges := pflag.BoolP("list-exchanges", "l", false, "List supported exchanges")
+	pflag.BoolP("list-exchanges", "l", false, "List supported exchanges")
 	pflag.IntP("refresh", "r", 0, "Auto refresh on every specified seconds, "+
 		"note every exchange has a rate limit, \ntoo frequent refresh may cause your IP banned by their servers")
 
@@ -65,14 +65,6 @@ func Parse() {
 			fmt.Fprintf(os.Stderr, ", build %s", Rev)
 		}
 		fmt.Fprintln(os.Stderr)
-		os.Exit(0)
-	}
-
-	if *showExchanges {
-		fmt.Fprintln(os.Stderr, "Supported exchanges:")
-		for _, name := range model.GetAllNames() {
-			fmt.Fprintf(os.Stderr, " %s\n", name)
-		}
 		os.Exit(0)
 	}
 
@@ -137,11 +129,19 @@ func writeExampleConfig(fpath string) {
 		}
 		defer fout.Close()
 	}
-	if _, err = fout.WriteString(exampleConfig); err != nil {
+	if _, err := fout.WriteString(exampleConfig); err != nil {
 		logrus.Errorf("Failed to write config file %s, error: %v", fpath, err)
 	} else if fout != os.Stdout {
 		logrus.Infof("Write example config file to %s", fpath)
 	}
+}
+
+func ListExchangesAndExit(exchanges []string) {
+	fmt.Fprintln(os.Stderr, "Supported exchanges:")
+	for _, name := range exchanges {
+		fmt.Fprintf(os.Stderr, " %s\n", name)
+	}
+	os.Exit(0)
 }
 
 func parseQueryFromCLI(cliArgs []string) []*model.PriceQuery {

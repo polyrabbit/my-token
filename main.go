@@ -9,17 +9,16 @@ import (
 	"github.com/fatih/color"
 	"github.com/mattn/go-colorable"
 	"github.com/polyrabbit/my-token/config"
-	_ "github.com/polyrabbit/my-token/exchange"
-	"github.com/polyrabbit/my-token/exchange/model"
+	"github.com/polyrabbit/my-token/exchange"
 	"github.com/polyrabbit/my-token/http"
 	"github.com/polyrabbit/my-token/writer"
 	"github.com/sirupsen/logrus"
 	"github.com/spf13/viper"
 )
 
-func checkForUpdate() {
+func checkForUpdate(httpClient *http.Client) {
 	const releaseURL = "https://api.github.com/repos/polyrabbit/my-token/releases/latest"
-	respBytes, err := http.Get(releaseURL, nil)
+	respBytes, err := httpClient.Get(releaseURL, nil)
 	if err != nil {
 		logrus.Debugf("Failed to fetch Github release page, error %v", err)
 		return
@@ -43,9 +42,13 @@ func checkForUpdate() {
 }
 
 func main() {
-	go checkForUpdate()
 	config.Parse()
-	model.Init()
+	httpClient := http.New()
+	registry := exchange.NewRegistry(httpClient)
+	if viper.GetBool("list-exchanges") {
+		config.ListExchangesAndExit(registry.GetAllNames())
+	}
+	go checkForUpdate(httpClient)
 
 	refreshInterval := viper.GetInt("refresh")
 	if refreshInterval != 0 {
@@ -58,7 +61,7 @@ func main() {
 
 	queries := config.MustParsePriceQueries()
 	for {
-		symbolPriceList := model.GetSymbolPrices(queries)
+		symbolPriceList := registry.GetSymbolPrices(queries)
 		tableWriter.Render(symbolPriceList)
 		if refreshInterval == 0 {
 			break

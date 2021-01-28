@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"github.com/polyrabbit/my-token/exchange/model"
+
 	"github.com/polyrabbit/my-token/http"
 	"github.com/sirupsen/logrus"
 	"github.com/tidwall/gjson"
@@ -17,8 +18,13 @@ import (
 const okexBaseApi = "https://www.okex.com/api/spot/v3/instruments/"
 
 type okexClient struct {
+	*http.Client
 	AccessKey string
 	SecretKey string
+}
+
+func NewOKexClient(httpClient *http.Client) ExchangeClient {
+	return &okexClient{Client: httpClient}
 }
 
 func (client *okexClient) GetName() string {
@@ -26,7 +32,7 @@ func (client *okexClient) GetName() string {
 }
 
 func (client *okexClient) GetKlinePrice(symbol, granularity string, start, end time.Time) (float64, error) {
-	respByte, err := http.Get(okexBaseApi+symbol+"/candles", map[string]string{
+	respByte, err := client.Get(okexBaseApi+symbol+"/candles", map[string]string{
 		"granularity": granularity,
 		"start":       start.UTC().Format(time.RFC3339),
 		"end":         end.UTC().Format(time.RFC3339),
@@ -56,7 +62,7 @@ func (client *okexClient) GetKlinePrice(symbol, granularity string, start, end t
 }
 
 func (client *okexClient) GetSymbolPrice(symbol string) (*model.SymbolPrice, error) {
-	respByte, err := http.Get(okexBaseApi+symbol+"/ticker", nil)
+	respByte, err := client.Get(okexBaseApi+symbol+"/ticker", nil)
 	if err := client.extractError(respByte); err != nil {
 		// Extract more readable first if have
 		return nil, fmt.Errorf("okex get symbol price: %w", err)
@@ -116,5 +122,5 @@ func (client *okexClient) extractError(respByte []byte) error {
 }
 
 func init() {
-	model.Register(new(okexClient))
+	Register(NewOKexClient)
 }

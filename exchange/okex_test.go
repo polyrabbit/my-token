@@ -7,7 +7,7 @@ import (
 
 func TestOKExClient(t *testing.T) {
 
-	var client = new(okexClient)
+	var client = registry.getClient("okex").(*okexClient)
 
 	t.Run("GetKlinePrice", func(t *testing.T) {
 		_, err := client.GetKlinePrice("bTC_usdt", "60", time.Now().Add(-time.Hour), time.Now())

@@ -6,7 +6,7 @@ import (
 
 func TestHuobiClient(t *testing.T) {
 
-	var client = new(huobiClient)
+	var client = registry.getClient("huobi").(*huobiClient)
 
 	t.Run("GetKlinePrice", func(t *testing.T) {
 		_, err := client.GetKlinePrice("bTCusdt", "1min", 60)

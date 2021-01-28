@@ -7,7 +7,7 @@ import (
 
 func TestPoloniexClient(t *testing.T) {
 
-	var client = new(poloniexClient)
+	var client = registry.getClient("poloniex").(*poloniexClient)
 
 	t.Run("GetKlinePrice", func(t *testing.T) {
 		_, err := client.GetKlinePrice("BTC_ETh", time.Now().Add(-1*time.Hour), 300)

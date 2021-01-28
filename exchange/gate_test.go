@@ -7,7 +7,7 @@ import (
 
 func TestGateClient(t *testing.T) {
 
-	var client = new(gateClient)
+	var client = registry.getClient("gate").(*gateClient)
 
 	t.Run("GetKlinePrice", func(t *testing.T) {
 		_, err := client.GetKlinePrice("bTC_usdt", 60, 1)

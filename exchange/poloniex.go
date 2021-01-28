@@ -18,6 +18,7 @@ import (
 const poloniexBaseApi = "https://poloniex.com/"
 
 type poloniexClient struct {
+	*http.Client
 	AccessKey string
 	SecretKey string
 }
@@ -34,6 +35,10 @@ type poloniexTicker struct {
 type poloniexKline struct {
 	Date int64
 	Open float64
+}
+
+func NewPoloniexClient(httpClient *http.Client) ExchangeClient {
+	return &poloniexClient{Client: httpClient}
 }
 
 func (client *poloniexClient) GetName() string {
@@ -53,7 +58,7 @@ func (client *poloniexClient) decodeResponse(respBytes []byte, result interface{
 
 func (client *poloniexClient) GetKlinePrice(symbol string, start time.Time, period int) (float64, error) {
 	end := start.Add(30 * time.Minute)
-	respBytes, err := http.Get(poloniexBaseApi+"public", map[string]string{
+	respBytes, err := client.Get(poloniexBaseApi+"public", map[string]string{
 		"command":      "returnChartData",
 		"currencyPair": strings.ToUpper(symbol),
 		"start":        strconv.FormatInt(start.Unix(), 10),
@@ -85,7 +90,7 @@ func (client *poloniexClient) lookupSymbol(symbol string, tickers map[string]pol
 }
 
 func (client *poloniexClient) GetSymbolPrice(symbol string) (*model.SymbolPrice, error) {
-	respBytes, err := http.Get(poloniexBaseApi+"public", map[string]string{"command": "returnTicker"})
+	respBytes, err := client.Get(poloniexBaseApi+"public", map[string]string{"command": "returnTicker"})
 	if err != nil {
 		return nil, err
 	}
@@ -121,5 +126,5 @@ func (client *poloniexClient) GetSymbolPrice(symbol string) (*model.SymbolPrice,
 }
 
 func init() {
-	model.Register(new(poloniexClient))
+	Register(NewPoloniexClient)
 }

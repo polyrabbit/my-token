@@ -11,14 +11,17 @@ import (
 	"github.com/spf13/viper"
 )
 
-// Thread safe
-var HTTPClient = http.DefaultClient
+type Client struct {
+	StdClient *http.Client
+}
 
-func Init() {
+func New() *Client {
+	// Thread safe
+	stdClient := http.DefaultClient
 	timeout := viper.GetInt("timeout")
 	if timeout != 0 {
 		logrus.Debugf("HTTP request timeout is set to %d seconds", timeout)
-		HTTPClient = &http.Client{
+		stdClient = &http.Client{
 			Timeout: time.Duration(timeout) * time.Second,
 		}
 	}
@@ -33,21 +36,13 @@ func Init() {
 				Proxy: http.ProxyURL(proxyURL),
 			}
 			logrus.Debugf("Using proxy %s", rawProxyURL)
-			HTTPClient.Transport = transport
+			stdClient.Transport = transport
 		}
 	}
+	return &Client{stdClient}
 }
 
-type HTTPError struct {
-	Status string
-	Body   []byte
-}
-
-func (e *HTTPError) Error() string {
-	return "HTTP " + e.Status + ", body " + string(e.Body)
-}
-
-func Get(rawURL string, params map[string]string) ([]byte, error) {
+func (c *Client) Get(rawURL string, params map[string]string) ([]byte, error) {
 	if params != nil {
 		parsedURL, err := url.Parse(rawURL)
 		if err != nil {
@@ -70,7 +65,7 @@ func Get(rawURL string, params map[string]string) ([]byte, error) {
 	req.Header.Add("Cache-Control", "no-store")
 	req.Header.Add("Cache-Control", "must-revalidate")
 
-	resp, err := HTTPClient.Do(req)
+	resp, err := c.StdClient.Do(req)
 	if err != nil {
 		return nil, err
 	}
@@ -81,7 +76,16 @@ func Get(rawURL string, params map[string]string) ([]byte, error) {
 	}
 	if !(resp.StatusCode >= 200 && resp.StatusCode < 300) {
 		// Most non-200 responses have valid json body
-		return respBytes, &HTTPError{resp.Status, respBytes}
+		return respBytes, &ResponseError{resp.Status, respBytes}
 	}
 	return respBytes, err
+}
+
+type ResponseError struct {
+	Status string
+	Body   []byte
+}
+
+func (e *ResponseError) Error() string {
+	return "HTTP " + e.Status + ", body " + string(e.Body[:200])
 }

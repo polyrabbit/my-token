@@ -7,7 +7,7 @@ import (
 
 func TestBittrexClient(t *testing.T) {
 
-	var client = new(bittrexClient)
+	var client = registry.getClient("bittrex").(*bittrexClient)
 
 	t.Run("GetKlineTicks", func(t *testing.T) {
 		klineResp, err := client.GetKlineTicks("USDT-BTc", "thirtyMin")

@@ -20,6 +20,7 @@ const zbBaseApi = "http://api.zb.com/data/v1/"
 // ZB api is very similar to OKEx, who copied whom?
 
 type zbClient struct {
+	*http.Client
 	AccessKey string
 	SecretKey string
 }
@@ -55,6 +56,10 @@ type zbCommonResponseProvider interface {
 	getCommonResponse() zbCommonResponse
 }
 
+func NewZBClient(httpClient *http.Client) ExchangeClient {
+	return &zbClient{Client: httpClient}
+}
+
 func (client *zbClient) GetName() string {
 	return "ZB"
 }
@@ -77,7 +82,7 @@ func (client *zbClient) decodeResponse(respByte []byte, respJSON zbCommonRespons
 
 func (client *zbClient) GetKlinePrice(symbol, period string, size int) (float64, error) {
 	symbol = strings.ToLower(symbol)
-	respBytes, err := http.Get(zbBaseApi+"kline", map[string]string{
+	respBytes, err := client.Get(zbBaseApi+"kline", map[string]string{
 		"market": symbol,
 		"type":   period,
 		"size":   strconv.Itoa(size),
@@ -97,7 +102,7 @@ func (client *zbClient) GetKlinePrice(symbol, period string, size int) (float64,
 }
 
 func (client *zbClient) GetSymbolPrice(symbol string) (*model.SymbolPrice, error) {
-	respBytes, err := http.Get(zbBaseApi+"ticker", map[string]string{"market": strings.ToLower(symbol)})
+	respBytes, err := client.Get(zbBaseApi+"ticker", map[string]string{"market": strings.ToLower(symbol)})
 	if err != nil {
 		return nil, err
 	}
@@ -135,5 +140,5 @@ func (client *zbClient) GetSymbolPrice(symbol string) (*model.SymbolPrice, error
 }
 
 func init() {
-	model.Register(new(zbClient))
+	Register(NewZBClient)
 }

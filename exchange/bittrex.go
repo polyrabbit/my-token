@@ -23,8 +23,13 @@ const bittrexBaseApi = "https://bittrex.com/api/v1.1/"
 const bittrexV2BaseApi = "https://bittrex.com/Api/v2.0/pub/market/"
 
 type bittrexClient struct {
+	*http.Client
 	AccessKey string
 	SecretKey string
+}
+
+func NewBittrexClient(httpClient *http.Client) ExchangeClient {
+	return &bittrexClient{Client: httpClient}
 }
 
 type bittrexCommonResponse struct {
@@ -84,7 +89,7 @@ func (client *bittrexClient) decodeResponse(respBytes []byte, respJSON bittrexCo
 
 func (client *bittrexClient) GetKlineTicks(market, interval string) (*bittrexKlineResponse, error) {
 	market = strings.ToLower(market)
-	respBytes, err := http.Get(bittrexV2BaseApi+"/GetTicks", map[string]string{
+	respBytes, err := client.Get(bittrexV2BaseApi+"/GetTicks", map[string]string{
 		"marketName":   market,
 		"tickInterval": interval,
 	})
@@ -115,7 +120,7 @@ func (client *bittrexClient) GetPriceRightAfter(klineResp *bittrexKlineResponse,
 }
 
 func (client *bittrexClient) GetSymbolPrice(symbol string) (*model.SymbolPrice, error) {
-	respBytes, err := http.Get(bittrexBaseApi+"/public/getticker", map[string]string{"market": strings.ToUpper(symbol)})
+	respBytes, err := client.Get(bittrexBaseApi+"/public/getticker", map[string]string{"market": strings.ToUpper(symbol)})
 	if err != nil {
 		return nil, err
 	}
@@ -164,5 +169,5 @@ func (client *bittrexClient) GetSymbolPrice(symbol string) (*model.SymbolPrice, 
 }
 
 func init() {
-	model.Register(&bittrexClient{})
+	Register(NewBittrexClient)
 }

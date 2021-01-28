@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"github.com/polyrabbit/my-token/exchange/model"
+
 	"github.com/polyrabbit/my-token/http"
 	"github.com/preichenberger/go-coinbasepro/v2"
 	"github.com/sirupsen/logrus"
@@ -17,13 +18,10 @@ type coinbaseClient struct {
 	coinbasepro *coinbasepro.Client
 }
 
-func NewCoinBaseClient() *coinbaseClient {
+func NewCoinBaseClient(httpClient *http.Client) ExchangeClient {
 	client := coinbasepro.NewClient()
+	client.HTTPClient = httpClient.StdClient
 	return &coinbaseClient{coinbasepro: client}
-}
-
-func (client *coinbaseClient) Init() {
-	client.coinbasepro.HTTPClient = http.HTTPClient
 }
 
 func (client *coinbaseClient) GetName() string {
@@ -89,5 +87,5 @@ func (client *coinbaseClient) GetSymbolPrice(symbol string) (*model.SymbolPrice,
 }
 
 func init() {
-	model.Register(NewCoinBaseClient())
+	Register(NewCoinBaseClient)
 }

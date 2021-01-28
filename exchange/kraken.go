@@ -9,8 +9,8 @@ import (
 	"time"
 
 	"github.com/polyrabbit/my-token/exchange/model"
-	"github.com/polyrabbit/my-token/http"
 
+	"github.com/polyrabbit/my-token/http"
 	"github.com/sirupsen/logrus"
 	"github.com/tidwall/gjson"
 )
@@ -19,8 +19,13 @@ import (
 const krakenBaseApi = "https://api.kraken.com/0/public/"
 
 type krakenClient struct {
+	*http.Client
 	AccessKey string
 	SecretKey string
+}
+
+func NewKrakenClient(httpClient *http.Client) ExchangeClient {
+	return &krakenClient{Client: httpClient}
 }
 
 func (client *krakenClient) GetName() string {
@@ -41,7 +46,7 @@ func (client *krakenClient) extractError(respByte []byte) error {
 
 func (client *krakenClient) GetKlinePrice(symbol string, since time.Time, interval int) (float64, error) {
 	symbolUpperCase := strings.ToUpper(symbol)
-	respByte, err := http.Get(krakenBaseApi+"OHLC", map[string]string{
+	respByte, err := client.Get(krakenBaseApi+"OHLC", map[string]string{
 		"pair":     symbolUpperCase,
 		"since":    strconv.FormatInt(since.Unix(), 10),
 		"interval": strconv.Itoa(interval),
@@ -67,7 +72,7 @@ func (client *krakenClient) GetKlinePrice(symbol string, since time.Time, interv
 }
 
 func (client *krakenClient) GetSymbolPrice(symbol string) (*model.SymbolPrice, error) {
-	respByte, err := http.Get(krakenBaseApi+"Ticker", map[string]string{"pair": strings.ToUpper(symbol)})
+	respByte, err := client.Get(krakenBaseApi+"Ticker", map[string]string{"pair": strings.ToUpper(symbol)})
 	if err := client.extractError(respByte); err != nil {
 		return nil, fmt.Errorf("kraken get ticker: %w", err)
 	}
@@ -111,5 +116,5 @@ func (client *krakenClient) GetSymbolPrice(symbol string) (*model.SymbolPrice, e
 }
 
 func init() {
-	model.Register(new(krakenClient))
+	Register(NewKrakenClient)
 }
