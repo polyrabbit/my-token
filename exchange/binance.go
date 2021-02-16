@@ -10,7 +10,6 @@ import (
 	"time"
 
 	"github.com/polyrabbit/my-token/exchange/model"
-
 	"github.com/polyrabbit/my-token/http"
 	"github.com/sirupsen/logrus"
 )
@@ -57,12 +56,12 @@ func (client *binanceClient) GetName() string {
 func (client *binanceClient) GetPrice1hAgo(symbol string) (float64, error) {
 	now := time.Now()
 	lastHour := now.Add(-1 * time.Hour)
-	respBytes, err := client.Get(binanceBaseApi+"/api/v1/klines", map[string]string{
+	respBytes, err := client.Get(binanceBaseApi+"/api/v1/klines", http.WithQuery(map[string]string{
 		"symbol":    strings.ToUpper(symbol),
 		"interval":  "1m",
 		"limit":     "1",
 		"startTime": strconv.FormatInt(lastHour.Unix()*1000, 10),
-	})
+	}))
 	if err != nil {
 		return 0, err
 	}
@@ -85,7 +84,7 @@ func (client *binanceClient) Get24hStatistics(symbol string) (*binance24hStatist
 	// always return an empty response, so the caller doesn't need to handle error
 	var respJSON binance24hStatistics
 
-	respBytes, err := client.Get(binanceBaseApi+"/api/v1/ticker/24hr", map[string]string{"symbol": strings.ToUpper(symbol)})
+	respBytes, err := client.Get(binanceBaseApi+"/api/v1/ticker/24hr", http.WithQuery(map[string]string{"symbol": strings.ToUpper(symbol)}))
 	if err != nil {
 		return &respJSON, err
 	}

@@ -18,7 +18,7 @@ import (
 
 func checkForUpdate(httpClient *http.Client) {
 	const releaseURL = "https://api.github.com/repos/polyrabbit/my-token/releases/latest"
-	respBytes, err := httpClient.Get(releaseURL, nil)
+	respBytes, err := httpClient.Get(releaseURL)
 	if err != nil {
 		logrus.Debugf("Failed to fetch Github release page, error %v", err)
 		return

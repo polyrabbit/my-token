@@ -55,7 +55,7 @@ func (client *coinMarketCapClient) Init() {
 }
 
 func (client *coinMarketCapClient) GetSymbolPrice(symbol string) (*model.SymbolPrice, error) {
-	respBytes, err := client.Get(coinmarketcapBaseApi+symbol+"/", nil)
+	respBytes, err := client.Get(coinmarketcapBaseApi + symbol + "/")
 	if err != nil {
 		if herr, ok := err.(*http.ResponseError); ok {
 			resp := &notFoundResponse{}

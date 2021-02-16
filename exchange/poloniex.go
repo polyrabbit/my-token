@@ -58,13 +58,13 @@ func (client *poloniexClient) decodeResponse(respBytes []byte, result interface{
 
 func (client *poloniexClient) GetKlinePrice(symbol string, start time.Time, period int) (float64, error) {
 	end := start.Add(30 * time.Minute)
-	respBytes, err := client.Get(poloniexBaseApi+"public", map[string]string{
+	respBytes, err := client.Get(poloniexBaseApi+"public", http.WithQuery(map[string]string{
 		"command":      "returnChartData",
 		"currencyPair": strings.ToUpper(symbol),
 		"start":        strconv.FormatInt(start.Unix(), 10),
 		"end":          strconv.FormatInt(end.Unix(), 10),
 		"period":       strconv.Itoa(period),
-	})
+	}))
 	if err != nil {
 		return 0, err
 	}
@@ -90,7 +90,7 @@ func (client *poloniexClient) lookupSymbol(symbol string, tickers map[string]pol
 }
 
 func (client *poloniexClient) GetSymbolPrice(symbol string) (*model.SymbolPrice, error) {
-	respBytes, err := client.Get(poloniexBaseApi+"public", map[string]string{"command": "returnTicker"})
+	respBytes, err := client.Get(poloniexBaseApi+"public", http.WithQuery(map[string]string{"command": "returnTicker"}))
 	if err != nil {
 		return nil, err
 	}

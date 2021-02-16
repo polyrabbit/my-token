@@ -80,7 +80,7 @@ func (client *bigOneClient) SearchKlinePriceNear(klineIntervals [][]interface{},
 
 func (client *bigOneClient) GetSymbolPrice(symbol string) (*model.SymbolPrice, error) {
 	// One api to get all
-	respBytes, err := client.Get(binanceBaseApi+"/markets/"+strings.ToUpper(symbol), nil)
+	respBytes, err := client.Get(binanceBaseApi + "/markets/" + strings.ToUpper(symbol))
 	if err != nil {
 		return nil, err
 	}

@@ -46,11 +46,11 @@ func (client *krakenClient) extractError(respByte []byte) error {
 
 func (client *krakenClient) GetKlinePrice(symbol string, since time.Time, interval int) (float64, error) {
 	symbolUpperCase := strings.ToUpper(symbol)
-	respByte, err := client.Get(krakenBaseApi+"OHLC", map[string]string{
+	respByte, err := client.Get(krakenBaseApi+"OHLC", http.WithQuery(map[string]string{
 		"pair":     symbolUpperCase,
 		"since":    strconv.FormatInt(since.Unix(), 10),
 		"interval": strconv.Itoa(interval),
-	})
+	}))
 	if err := client.extractError(respByte); err != nil {
 		return 0, fmt.Errorf("kraken get kline: %w", err)
 	}
@@ -72,7 +72,7 @@ func (client *krakenClient) GetKlinePrice(symbol string, since time.Time, interv
 }
 
 func (client *krakenClient) GetSymbolPrice(symbol string) (*model.SymbolPrice, error) {
-	respByte, err := client.Get(krakenBaseApi+"Ticker", map[string]string{"pair": strings.ToUpper(symbol)})
+	respByte, err := client.Get(krakenBaseApi+"Ticker", http.WithQuery(map[string]string{"pair": strings.ToUpper(symbol)}))
 	if err := client.extractError(respByte); err != nil {
 		return nil, fmt.Errorf("kraken get ticker: %w", err)
 	}

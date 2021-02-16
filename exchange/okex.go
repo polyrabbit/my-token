@@ -32,11 +32,11 @@ func (client *okexClient) GetName() string {
 }
 
 func (client *okexClient) GetKlinePrice(symbol, granularity string, start, end time.Time) (float64, error) {
-	respByte, err := client.Get(okexBaseApi+symbol+"/candles", map[string]string{
+	respByte, err := client.Get(okexBaseApi+symbol+"/candles", http.WithQuery(map[string]string{
 		"granularity": granularity,
 		"start":       start.UTC().Format(time.RFC3339),
 		"end":         end.UTC().Format(time.RFC3339),
-	})
+	}))
 	if err := client.extractError(respByte); err != nil {
 		return 0, fmt.Errorf("okex get candles: %w", err)
 	}
@@ -62,7 +62,7 @@ func (client *okexClient) GetKlinePrice(symbol, granularity string, start, end t
 }
 
 func (client *okexClient) GetSymbolPrice(symbol string) (*model.SymbolPrice, error) {
-	respByte, err := client.Get(okexBaseApi+symbol+"/ticker", nil)
+	respByte, err := client.Get(okexBaseApi + symbol + "/ticker")
 	if err := client.extractError(respByte); err != nil {
 		// Extract more readable first if have
 		return nil, fmt.Errorf("okex get symbol price: %w", err)

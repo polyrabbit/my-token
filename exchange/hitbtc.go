@@ -81,10 +81,10 @@ func (client *hitBtcClient) decodeResponse(respBytes []byte, respJSON hitBtcComm
 }
 
 func (client *hitBtcClient) GetKlinePrice(symbol, period string, limit int) (float64, error) {
-	respBytes, err := client.Get(hitBtcBaseApi+"public/candles/"+strings.ToUpper(symbol), map[string]string{
+	respBytes, err := client.Get(hitBtcBaseApi+"public/candles/"+strings.ToUpper(symbol), http.WithQuery(map[string]string{
 		"period": period,
 		"limit":  strconv.Itoa(limit),
-	})
+	}))
 	if err != nil {
 		return 0, err
 	}
@@ -98,7 +98,7 @@ func (client *hitBtcClient) GetKlinePrice(symbol, period string, limit int) (flo
 }
 
 func (client *hitBtcClient) GetSymbolPrice(symbol string) (*model.SymbolPrice, error) {
-	respBytes, err := client.Get(hitBtcBaseApi+"public/ticker/"+strings.ToUpper(symbol), nil)
+	respBytes, err := client.Get(hitBtcBaseApi + "public/ticker/" + strings.ToUpper(symbol))
 	if err != nil {
 		return nil, err
 	}

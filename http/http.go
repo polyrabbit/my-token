@@ -1,7 +1,6 @@
 package http
 
 import (
-	"fmt"
 	"io/ioutil"
 	"net/http"
 	"net/url"
@@ -42,28 +41,18 @@ func New() *Client {
 	return &Client{stdClient}
 }
 
-func (c *Client) Get(rawURL string, params map[string]string) ([]byte, error) {
-	if params != nil {
-		parsedURL, err := url.Parse(rawURL)
-		if err != nil {
-			return nil, fmt.Errorf("parse url %s: %w", rawURL, err)
-		}
-		query := url.Values{}
-		for k, v := range params {
-			query.Set(k, v)
-		}
-		parsedURL.RawQuery = query.Encode()
-		rawURL = parsedURL.String()
+func (c *Client) Get(rawURL string, opts ...RequestOption) ([]byte, error) {
+	option := defaultRequestOptions
+	for _, o := range opts {
+		o(&option)
 	}
 
+	rawURL = option.AppendQuery(rawURL)
 	req, err := http.NewRequest("GET", rawURL, nil)
 	if err != nil {
 		return nil, err
 	}
-	req.Header.Set("User-Agent", "Mozilla/5.0 (compatible; my-token; +https://github.com/polyrabbit/my-token)")
-	req.Header.Set("Cache-Control", "no-cache")
-	req.Header.Add("Cache-Control", "no-store")
-	req.Header.Add("Cache-Control", "must-revalidate")
+	option.SetHeader(req.Header)
 
 	resp, err := c.StdClient.Do(req)
 	if err != nil {
@@ -88,4 +77,52 @@ type ResponseError struct {
 
 func (e *ResponseError) Error() string {
 	return "HTTP " + e.Status + ", body " + string(e.Body[:200])
+}
+
+type RequestOption func(*RequestOptions)
+
+type RequestOptions struct {
+	query  map[string]string
+	header map[string]string
+}
+
+func WithQuery(query map[string]string) RequestOption {
+	return func(o *RequestOptions) {
+		o.query = query
+	}
+}
+
+func WithHeader(header map[string]string) RequestOption {
+	return func(o *RequestOptions) {
+		o.header = header
+	}
+}
+
+var defaultRequestOptions = RequestOptions{
+	header: map[string]string{
+		"User-Agent":    "Mozilla/5.0 (compatible; my-token; +https://github.com/polyrabbit/my-token)",
+		"Cache-Control": "no-store, no-cache, private",
+	},
+}
+
+func (o *RequestOptions) AppendQuery(rawURL string) string {
+	if o.query == nil {
+		return rawURL
+	}
+	parsedURL, err := url.Parse(rawURL)
+	if err != nil {
+		return rawURL
+	}
+	query := url.Values{}
+	for k, v := range o.query {
+		query.Set(k, v)
+	}
+	parsedURL.RawQuery = query.Encode()
+	return parsedURL.String()
+}
+
+func (o *RequestOptions) SetHeader(req http.Header) {
+	for k, v := range o.header {
+		req.Set(k, v)
+	}
 }

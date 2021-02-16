@@ -89,10 +89,10 @@ func (client *bittrexClient) decodeResponse(respBytes []byte, respJSON bittrexCo
 
 func (client *bittrexClient) GetKlineTicks(market, interval string) (*bittrexKlineResponse, error) {
 	market = strings.ToLower(market)
-	respBytes, err := client.Get(bittrexV2BaseApi+"/GetTicks", map[string]string{
+	respBytes, err := client.Get(bittrexV2BaseApi+"/GetTicks", http.WithQuery(map[string]string{
 		"marketName":   market,
 		"tickInterval": interval,
-	})
+	}))
 	if err != nil {
 		return nil, err
 	}
@@ -120,7 +120,7 @@ func (client *bittrexClient) GetPriceRightAfter(klineResp *bittrexKlineResponse,
 }
 
 func (client *bittrexClient) GetSymbolPrice(symbol string) (*model.SymbolPrice, error) {
-	respBytes, err := client.Get(bittrexBaseApi+"/public/getticker", map[string]string{"market": strings.ToUpper(symbol)})
+	respBytes, err := client.Get(bittrexBaseApi+"/public/getticker", http.WithQuery(map[string]string{"market": strings.ToUpper(symbol)}))
 	if err != nil {
 		return nil, err
 	}
