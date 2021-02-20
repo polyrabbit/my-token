@@ -9,6 +9,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/polyrabbit/my-token/config"
 	"github.com/polyrabbit/my-token/http"
 	"github.com/sirupsen/logrus"
 )
@@ -18,8 +19,6 @@ const gateBaseApi = "http://data.gateio.io/api2/1/"
 
 type gateClient struct {
 	*http.Client
-	AccessKey string
-	SecretKey string
 }
 
 type gateCommonResponse struct {
@@ -50,7 +49,7 @@ type gateCommonResponseProvider interface {
 	getCommonResponse() gateCommonResponse
 }
 
-func NewGateClient(httpClient *http.Client) ExchangeClient {
+func NewGateClient(queries map[string]config.PriceQuery, httpClient *http.Client) ExchangeClient {
 	return &gateClient{Client: httpClient}
 }
 

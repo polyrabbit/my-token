@@ -8,6 +8,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/polyrabbit/my-token/config"
 	"github.com/polyrabbit/my-token/http"
 	"github.com/sirupsen/logrus"
 )
@@ -19,8 +20,6 @@ const hitBtcBaseApi = "https://api.hitbtc.com/api/2/"
 
 type hitBtcClient struct {
 	*http.Client
-	AccessKey string
-	SecretKey string
 }
 
 type hitBtcCommonResponse struct {
@@ -57,7 +56,7 @@ type hitBtcCommonResponseProvider interface {
 	getCommonResponse() hitBtcCommonResponse
 }
 
-func NewHitBtcClient(httpClient *http.Client) ExchangeClient {
+func NewHitBtcClient(queries map[string]config.PriceQuery, httpClient *http.Client) ExchangeClient {
 	return &hitBtcClient{Client: httpClient}
 }
 

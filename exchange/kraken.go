@@ -8,6 +8,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/polyrabbit/my-token/config"
 	"github.com/polyrabbit/my-token/http"
 	"github.com/sirupsen/logrus"
 	"github.com/tidwall/gjson"
@@ -18,11 +19,9 @@ const krakenBaseApi = "https://api.kraken.com/0/public/"
 
 type krakenClient struct {
 	*http.Client
-	AccessKey string
-	SecretKey string
 }
 
-func NewKrakenClient(httpClient *http.Client) ExchangeClient {
+func NewKrakenClient(queries map[string]config.PriceQuery, httpClient *http.Client) ExchangeClient {
 	return &krakenClient{Client: httpClient}
 }
 

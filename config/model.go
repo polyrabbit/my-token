@@ -1,5 +1,7 @@
 package config
 
+import "strings"
+
 const (
 	ColumnSymbol       = "Symbol"
 	ColumnPrice        = "Price"
@@ -31,7 +33,7 @@ type Config struct {
 func (c *Config) GroupQueryByExchange() map[string]PriceQuery {
 	exchangeMap := make(map[string]PriceQuery, len(c.Queries))
 	for _, query := range c.Queries {
-		exchangeMap[query.Name] = query
+		exchangeMap[strings.ToUpper(query.Name)] = query
 	}
 	return exchangeMap
 }

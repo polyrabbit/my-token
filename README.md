@@ -61,7 +61,7 @@ Download from [release page](https://github.com/polyrabbit/my-token/releases/lat
 ```
 $ mt --help
 
-Usage: mt [Options] [Exchange1.Token1 Exchange2.Token2 ...]
+Usage: mt [Options] [Exchange1.Token1 Exchange2.Token2.<api_key> ...]
 
 Track token prices of your favorite exchanges in the terminal
 
@@ -80,7 +80,7 @@ Options:
   -t, --timeout int                        HTTP request timeout in seconds (default 20)
 
 Space-separated exchange.token pairs:
-  Specify which exchange and token pair to query, different exchanges use different forms to express tokens/trading pairs, refer to their URLs to find the format, eg. to get BitCoin price from Bitfinex and CoinMarketCap you should use query string "Bitfinex.BTCUSDT CoinMarketCap.Bitcoin"
+  Specify which exchange and token pair to query, different exchanges use different forms to express tokens/trading pairs, refer to their URLs to find the format (eg. "Bitfinex.BTCUSDT"). Optionally you can set api_key in the third place.
 
 Find help/updates from here - https://github.com/polyrabbit/my-token
 ```

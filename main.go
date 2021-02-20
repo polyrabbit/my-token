@@ -44,7 +44,7 @@ func checkForUpdate(httpClient *http.Client) {
 func main() {
 	cfg := config.Parse()
 	httpClient := http.New(cfg)
-	registry := exchange.NewRegistry(httpClient)
+	registry := exchange.NewRegistry(cfg, httpClient)
 	if viper.GetBool("list-exchanges") {
 		config.ListExchangesAndExit(registry.GetAllNames())
 	}

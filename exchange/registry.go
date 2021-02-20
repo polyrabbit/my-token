@@ -17,7 +17,7 @@ type ExchangeClient interface {
 	GetSymbolPrice(string) (*SymbolPrice, error)
 }
 
-type ExchangeClientProvider func(*http.Client) ExchangeClient
+type ExchangeClientProvider func(queries map[string]config.PriceQuery, httpClient *http.Client) ExchangeClient
 
 var providers []ExchangeClientProvider
 
@@ -30,10 +30,11 @@ type Registry struct {
 	officialNames []string
 }
 
-func NewRegistry(httpClient *http.Client) *Registry {
+func NewRegistry(cfg *config.Config, httpClient *http.Client) *Registry {
+	exchangeMap := cfg.GroupQueryByExchange()
 	r := &Registry{clients: make(map[string]ExchangeClient)}
 	for _, p := range providers {
-		eClient := p(httpClient)
+		eClient := p(exchangeMap, httpClient)
 		r.officialNames = append(r.officialNames, eClient.GetName())
 		upperName := strings.ToUpper(eClient.GetName())
 		if _, exist := r.clients[upperName]; exist {

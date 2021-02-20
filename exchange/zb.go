@@ -8,6 +8,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/polyrabbit/my-token/config"
 	"github.com/polyrabbit/my-token/http"
 	"github.com/sirupsen/logrus"
 )
@@ -19,8 +20,6 @@ const zbBaseApi = "http://api.zb.com/data/v1/"
 
 type zbClient struct {
 	*http.Client
-	AccessKey string
-	SecretKey string
 }
 
 type zbCommonResponse struct {
@@ -54,7 +53,7 @@ type zbCommonResponseProvider interface {
 	getCommonResponse() zbCommonResponse
 }
 
-func NewZBClient(httpClient *http.Client) ExchangeClient {
+func NewZBClient(queries map[string]config.PriceQuery, httpClient *http.Client) ExchangeClient {
 	return &zbClient{Client: httpClient}
 }
 

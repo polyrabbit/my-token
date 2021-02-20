@@ -9,6 +9,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/polyrabbit/my-token/config"
 	"github.com/polyrabbit/my-token/http"
 	"github.com/sirupsen/logrus"
 )
@@ -18,11 +19,9 @@ const bitfinixBaseApi = "https://api.bitfinex.com/v2/" //Need api v2 to get klin
 
 type bitfinixClient struct {
 	*http.Client
-	AccessKey string
-	SecretKey string
 }
 
-func NewBitfinixClient(httpClient *http.Client) ExchangeClient {
+func NewBitfinixClient(queries map[string]config.PriceQuery, httpClient *http.Client) ExchangeClient {
 	return &bitfinixClient{Client: httpClient}
 }
 

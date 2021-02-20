@@ -9,6 +9,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/polyrabbit/my-token/config"
 	"github.com/polyrabbit/my-token/http"
 	"github.com/sirupsen/logrus"
 )
@@ -18,8 +19,6 @@ const binanceBaseApi = "https://api.binance.com"
 
 type binanceClient struct {
 	*http.Client
-	AccessKey string
-	SecretKey string
 }
 
 type binanceErrorResponse struct {
@@ -44,7 +43,7 @@ type binance24hStatistics struct {
 	CloseTime          int64
 }
 
-func NewBinanceClient(httpClient *http.Client) ExchangeClient {
+func NewBinanceClient(queries map[string]config.PriceQuery, httpClient *http.Client) ExchangeClient {
 	return &binanceClient{Client: httpClient}
 }
 
@@ -85,15 +84,15 @@ func (client *binanceClient) Get24hStatistics(symbol string) (*binance24hStatist
 
 	respBytes, err := client.Get(binanceBaseApi+"/api/v1/ticker/24hr", http.WithQuery(map[string]string{"symbol": strings.ToUpper(symbol)}))
 	if err != nil {
-		return &respJSON, err
+		return nil, err
 	}
 
 	if err := json.Unmarshal(respBytes, &respJSON); err != nil {
-		return &respJSON, err
+		return nil, err
 	}
 
 	if respJSON.Msg != nil {
-		return &respJSON, errors.New(*respJSON.Msg)
+		return nil, errors.New(*respJSON.Msg)
 	}
 	return &respJSON, nil
 }

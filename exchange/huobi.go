@@ -8,6 +8,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/polyrabbit/my-token/config"
 	"github.com/polyrabbit/my-token/http"
 	"github.com/sirupsen/logrus"
 )
@@ -61,7 +62,7 @@ type huobiCommonResponseProvider interface {
 	getCommonResponse() huobiCommonResponse
 }
 
-func NewHuobiClient(httpClient *http.Client) ExchangeClient {
+func NewHuobiClient(queries map[string]config.PriceQuery, httpClient *http.Client) ExchangeClient {
 	return &huobiClient{Client: httpClient}
 }
 

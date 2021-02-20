@@ -7,6 +7,7 @@ import (
 	"strconv"
 	"time"
 
+	"github.com/polyrabbit/my-token/config"
 	"github.com/polyrabbit/my-token/http"
 	"github.com/sirupsen/logrus"
 	"github.com/tidwall/gjson"
@@ -17,11 +18,9 @@ const okexBaseApi = "https://www.okex.com/api/spot/v3/instruments/"
 
 type okexClient struct {
 	*http.Client
-	AccessKey string
-	SecretKey string
 }
 
-func NewOKexClient(httpClient *http.Client) ExchangeClient {
+func NewOKexClient(queries map[string]config.PriceQuery, httpClient *http.Client) ExchangeClient {
 	return &okexClient{Client: httpClient}
 }
 

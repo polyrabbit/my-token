@@ -8,6 +8,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/polyrabbit/my-token/config"
 	"github.com/polyrabbit/my-token/http"
 	"github.com/sirupsen/logrus"
 )
@@ -35,7 +36,7 @@ type poloniexKline struct {
 	Open float64
 }
 
-func NewPoloniexClient(httpClient *http.Client) ExchangeClient {
+func NewPoloniexClient(queries map[string]config.PriceQuery, httpClient *http.Client) ExchangeClient {
 	return &poloniexClient{Client: httpClient}
 }
 

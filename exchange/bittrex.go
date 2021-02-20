@@ -10,6 +10,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/polyrabbit/my-token/config"
 	"github.com/polyrabbit/my-token/http"
 	"github.com/sirupsen/logrus"
 )
@@ -22,11 +23,9 @@ const bittrexV2BaseApi = "https://bittrex.com/Api/v2.0/pub/market/"
 
 type bittrexClient struct {
 	*http.Client
-	AccessKey string
-	SecretKey string
 }
 
-func NewBittrexClient(httpClient *http.Client) ExchangeClient {
+func NewBittrexClient(queries map[string]config.PriceQuery, httpClient *http.Client) ExchangeClient {
 	return &bittrexClient{Client: httpClient}
 }
 

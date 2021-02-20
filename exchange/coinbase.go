@@ -7,6 +7,7 @@ import (
 	"strconv"
 	"time"
 
+	"github.com/polyrabbit/my-token/config"
 	"github.com/polyrabbit/my-token/http"
 	"github.com/preichenberger/go-coinbasepro/v2"
 	"github.com/sirupsen/logrus"
@@ -16,7 +17,7 @@ type coinbaseClient struct {
 	coinbasepro *coinbasepro.Client
 }
 
-func NewCoinBaseClient(httpClient *http.Client) ExchangeClient {
+func NewCoinBaseClient(queries map[string]config.PriceQuery, httpClient *http.Client) ExchangeClient {
 	client := coinbasepro.NewClient()
 	client.HTTPClient = httpClient.StdClient
 	return &coinbaseClient{coinbasepro: client}

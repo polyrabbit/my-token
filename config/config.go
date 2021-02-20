@@ -108,13 +108,13 @@ func Parse() *Config {
 
 func showUsageAndExit() {
 	// Print usage message and exit
-	fmt.Fprintf(os.Stderr, "\nUsage: %s [Options] [Exchange1.Token1 Exchange2.Token2 ...]\n", os.Args[0])
+	fmt.Fprintf(os.Stderr, "\nUsage: %s [Options] [Exchange1.Token1 Exchange2.Token2.<api_key> ...]\n", os.Args[0])
 	fmt.Fprintln(os.Stderr, "\nTrack token prices of your favorite exchanges in the terminal")
 	fmt.Fprintln(os.Stderr, "\nOptions:")
 	pflag.PrintDefaults()
 	fmt.Fprintln(os.Stderr, "\nSpace-separated exchange.token pairs:")
 	fmt.Fprintln(os.Stderr, "  Specify which exchange and token pair to query, different exchanges use different forms to express tokens/trading pairs, refer to their URLs to find the format"+
-		" (eg. to get BitCoin price from Bitfinex and CoinMarketCap you should use query string \"Bitfinex.BTCUSDT CoinMarketCap.Bitcoin\").")
+		" (eg. \"Bitfinex.BTCUSDT\"). Optionally you can set api_key in the third place.")
 	fmt.Fprintln(os.Stderr, "\nFind help/updates from here - https://github.com/polyrabbit/my-token")
 	os.Exit(0)
 }
@@ -150,15 +150,16 @@ func ListExchangesAndExit(exchanges []string) {
 	os.Exit(0)
 }
 
+// CLI format exchange.token.<api_key> - api_key is optional
 func parseQueryFromCLI(cliArgs []string) []PriceQuery {
 	var (
-		lastExchangeDef = PriceQuery{}
+		lastExchangeDef PriceQuery
 		exchangeList    []PriceQuery
 	)
 	for _, arg := range cliArgs {
-		tokenDef := strings.SplitN(arg, ".", 2)
-		if len(tokenDef) != 2 {
-			logrus.Fatalf("Unrecognized token definition - %s, expecting {exchange}.{token}\n", arg)
+		tokenDef := strings.SplitN(arg, ".", -1)
+		if len(tokenDef) < 2 {
+			logrus.Fatalf("Unrecognized token definition - %s, expecting {exchange}.{token}.<api_key>\n", arg)
 		}
 		if lastExchangeDef.Name == tokenDef[0] {
 			// Merge consecutive exchange definitions
@@ -167,9 +168,14 @@ func parseQueryFromCLI(cliArgs []string) []PriceQuery {
 		} else {
 			exchangeDef := PriceQuery{
 				Name:   tokenDef[0],
-				Tokens: []string{tokenDef[1]}}
+				Tokens: []string{tokenDef[1]},
+			}
 			lastExchangeDef = exchangeDef
 			exchangeList = append(exchangeList, exchangeDef)
+		}
+		// The third one is api key
+		if len(tokenDef) > 2 && len(exchangeList) > 0 {
+			exchangeList[len(exchangeList)-1].APIKey = tokenDef[2]
 		}
 	}
 	return exchangeList
