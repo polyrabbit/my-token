@@ -9,8 +9,6 @@ import (
 	"strings"
 	"time"
 
-	"github.com/polyrabbit/my-token/exchange/model"
-
 	"github.com/polyrabbit/my-token/http"
 	"github.com/sirupsen/logrus"
 )
@@ -78,7 +76,7 @@ func (client *bigOneClient) SearchKlinePriceNear(klineIntervals [][]interface{},
 	return 0, fmt.Errorf("no time found right after %v, the last time in this interval is %v", after.Local(), intervalTime.Local())
 }
 
-func (client *bigOneClient) GetSymbolPrice(symbol string) (*model.SymbolPrice, error) {
+func (client *bigOneClient) GetSymbolPrice(symbol string) (*SymbolPrice, error) {
 	// One api to get all
 	respBytes, err := client.Get(binanceBaseApi + "/markets/" + strings.ToUpper(symbol))
 	if err != nil {
@@ -116,7 +114,7 @@ func (client *bigOneClient) GetSymbolPrice(symbol string) (*model.SymbolPrice, e
 		percentChange24h = (respJSON.Data.Ticker.Price - price24hAgo) / price24hAgo * 100
 	}
 
-	return &model.SymbolPrice{
+	return &SymbolPrice{
 		Symbol:           symbol,
 		Price:            strconv.FormatFloat(respJSON.Data.Ticker.Price, 'f', -1, 64),
 		UpdateAt:         time.Now(),

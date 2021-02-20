@@ -28,9 +28,10 @@ exchanges:
   tokens:
   ## Tokens supported by this exchange, note that different exchanges have different
   ## formats to denote their tokens/markets, refer to their URLs to find the format
-  - Bitcoin
-#  - Ethereum
-#  - Litecoin
+  - BTC
+#  - ETH
+#  - LTC
+  api_key: "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
 
 - name: Bitfinex
   tokens:

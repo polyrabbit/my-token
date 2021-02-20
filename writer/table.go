@@ -7,46 +7,32 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/polyrabbit/my-token/exchange/model"
-
 	"github.com/fatih/color"
 	"github.com/gosuri/uilive"
 	"github.com/mattn/go-colorable"
 	"github.com/olekukonko/tablewriter"
-	"github.com/spf13/viper"
+	"github.com/polyrabbit/my-token/config"
+	"github.com/polyrabbit/my-token/exchange"
 )
-
-const (
-	colSymbol       = "Symbol"
-	colPrice        = "Price"
-	colChange1hPct  = "%Change(1h)"
-	colChange24hPct = "%Change(24h)"
-	colSource       = "Source"
-	colUpdated      = "Updated"
-)
-
-func GetColumns() []string {
-	return []string{colSymbol, colPrice, colChange1hPct, colChange24hPct, colSource, colUpdated}
-}
 
 var faint = color.New(color.Faint).SprintFunc()
 
 type tableWriter struct {
 	*uilive.Writer
-	table *tablewriter.Table
+	table       *tablewriter.Table
+	columnNames []string
 }
 
 // Set up ascii table writer
-func NewTableWriter() *tableWriter {
-	tw := &tableWriter{Writer: uilive.New()}
+func NewTableWriter(cfg *config.Config) *tableWriter {
+	tw := &tableWriter{Writer: uilive.New(), columnNames: cfg.Columns}
 	tw.Writer.Out = colorable.NewColorableStdout() // For Windows
 	tw.table = tablewriter.NewWriter(tw.Writer)
 	tw.table.SetAutoFormatHeaders(false)
 	tw.table.SetAutoWrapText(false)
-	headers := viper.GetStringSlice("show")
-	formattedHeaders := make([]string, len(headers))
-	for i, hdr := range headers {
-		formattedHeaders[i] = color.YellowString(hdr)
+	formattedHeaders := make([]string, len(cfg.Columns))
+	for i, column := range cfg.Columns {
+		formattedHeaders[i] = color.YellowString(column)
 	}
 	tw.table.SetHeader(formattedHeaders)
 	tw.table.SetRowLine(true)
@@ -71,27 +57,27 @@ func (tw *tableWriter) highlightChange(changePct float64) string {
 	return changeText
 }
 
-func (tw *tableWriter) Render(symbolPriceList []*model.SymbolPrice) {
+func (tw *tableWriter) Render(symbolPriceList []*exchange.SymbolPrice) {
 	tw.table.ClearRows()
 	// Fill in data
 	for _, sp := range symbolPriceList {
 		var columns []string
-		for _, hdr := range viper.GetStringSlice("show") {
-			switch strings.ToLower(hdr) {
-			case strings.ToLower(colSymbol):
+		for _, name := range tw.columnNames {
+			switch strings.ToLower(name) {
+			case strings.ToLower(config.ColumnSymbol):
 				columns = append(columns, sp.Symbol)
-			case strings.ToLower(colPrice):
+			case strings.ToLower(config.ColumnPrice):
 				columns = append(columns, sp.Price)
-			case strings.ToLower(colChange1hPct):
+			case strings.ToLower(config.ColumnChange1hPct):
 				columns = append(columns, tw.highlightChange(sp.PercentChange1h))
-			case strings.ToLower(colChange24hPct):
+			case strings.ToLower(config.ColumnChange24hPct):
 				columns = append(columns, tw.highlightChange(sp.PercentChange24h))
-			case strings.ToLower(colSource):
+			case strings.ToLower(config.ColumnSource):
 				columns = append(columns, sp.Source)
-			case strings.ToLower(colUpdated):
+			case strings.ToLower(config.ColumnUpdated):
 				columns = append(columns, sp.UpdateAt.Local().Format("15:04:05"))
 			default:
-				fmt.Fprintf(os.Stderr, "Unknown column: %s\n", hdr)
+				fmt.Fprintf(os.Stderr, "Unknown column: %q\n", name)
 				os.Exit(1)
 			}
 

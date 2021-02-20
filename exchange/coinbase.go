@@ -7,8 +7,6 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/polyrabbit/my-token/exchange/model"
-
 	"github.com/polyrabbit/my-token/http"
 	"github.com/preichenberger/go-coinbasepro/v2"
 	"github.com/sirupsen/logrus"
@@ -39,7 +37,7 @@ func (client *coinbaseClient) GetPriceRightAfter(candles []coinbasepro.HistoricR
 	return 0, fmt.Errorf("no time found right after %v", after)
 }
 
-func (client *coinbaseClient) GetSymbolPrice(symbol string) (*model.SymbolPrice, error) {
+func (client *coinbaseClient) GetSymbolPrice(symbol string) (*SymbolPrice, error) {
 	ticker, err := client.coinbasepro.GetTicker(symbol)
 	if err != nil {
 		return nil, err
@@ -76,7 +74,7 @@ func (client *coinbaseClient) GetSymbolPrice(symbol string) (*model.SymbolPrice,
 		}
 	}
 
-	return &model.SymbolPrice{
+	return &SymbolPrice{
 		Symbol:           symbol,
 		Price:            ticker.Price,
 		UpdateAt:         time.Time(ticker.Time),

@@ -8,8 +8,6 @@ import (
 	"strings"
 	"time"
 
-	"github.com/polyrabbit/my-token/exchange/model"
-
 	"github.com/polyrabbit/my-token/http"
 	"github.com/sirupsen/logrus"
 )
@@ -101,7 +99,7 @@ func (client *zbClient) GetKlinePrice(symbol, period string, size int) (float64,
 	return respJSON.Data[0][1], nil
 }
 
-func (client *zbClient) GetSymbolPrice(symbol string) (*model.SymbolPrice, error) {
+func (client *zbClient) GetSymbolPrice(symbol string) (*SymbolPrice, error) {
 	respBytes, err := client.Get(zbBaseApi+"ticker", http.WithQuery(map[string]string{"market": strings.ToLower(symbol)}))
 	if err != nil {
 		return nil, err
@@ -129,7 +127,7 @@ func (client *zbClient) GetSymbolPrice(symbol string) (*model.SymbolPrice, error
 		percentChange24h = (respJSON.Ticker.Last - price24hAgo) / price24hAgo * 100
 	}
 
-	return &model.SymbolPrice{
+	return &SymbolPrice{
 		Symbol:           symbol,
 		Price:            strconv.FormatFloat(respJSON.Ticker.Last, 'f', -1, 64),
 		UpdateAt:         time.Unix(respJSON.Date/1000, 0),

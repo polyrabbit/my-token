@@ -10,8 +10,8 @@ import (
 var registry *Registry
 
 func init() {
-	config.Parse()
-	registry = NewRegistry(http.New())
+	cfg := config.Parse()
+	registry = NewRegistry(cfg, http.New(cfg))
 }
 
 func TestRegistry_getClient(t *testing.T) {

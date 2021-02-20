@@ -9,7 +9,6 @@ import (
 	"strings"
 	"time"
 
-	"github.com/polyrabbit/my-token/exchange/model"
 	"github.com/polyrabbit/my-token/http"
 	"github.com/sirupsen/logrus"
 )
@@ -99,7 +98,7 @@ func (client *binanceClient) Get24hStatistics(symbol string) (*binance24hStatist
 	return &respJSON, nil
 }
 
-func (client *binanceClient) GetSymbolPrice(symbol string) (*model.SymbolPrice, error) {
+func (client *binanceClient) GetSymbolPrice(symbol string) (*SymbolPrice, error) {
 	// I found 24 hour price statistics already covers required info, uncomment the following code if needed
 
 	//rawUrl := client.buildUrl("/api/v3/ticker/price", map[string]string{"symbol": strings.ToUpper(symbol)})
@@ -137,7 +136,7 @@ func (client *binanceClient) GetSymbolPrice(symbol string) (*model.SymbolPrice, 
 		percentChange1h = (currentPrice - price1hAgo) / price1hAgo * 100
 	}
 
-	return &model.SymbolPrice{
+	return &SymbolPrice{
 		Symbol:           symbol,
 		Price:            stat24h.LastPrice,
 		UpdateAt:         time.Unix(stat24h.CloseTime/1000, 0),

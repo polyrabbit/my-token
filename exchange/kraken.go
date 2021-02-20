@@ -8,8 +8,6 @@ import (
 	"strings"
 	"time"
 
-	"github.com/polyrabbit/my-token/exchange/model"
-
 	"github.com/polyrabbit/my-token/http"
 	"github.com/sirupsen/logrus"
 	"github.com/tidwall/gjson"
@@ -71,7 +69,7 @@ func (client *krakenClient) GetKlinePrice(symbol string, since time.Time, interv
 	return openPrice, nil
 }
 
-func (client *krakenClient) GetSymbolPrice(symbol string) (*model.SymbolPrice, error) {
+func (client *krakenClient) GetSymbolPrice(symbol string) (*SymbolPrice, error) {
 	respByte, err := client.Get(krakenBaseApi+"Ticker", http.WithQuery(map[string]string{"pair": strings.ToUpper(symbol)}))
 	if err := client.extractError(respByte); err != nil {
 		return nil, fmt.Errorf("kraken get ticker: %w", err)
@@ -105,7 +103,7 @@ func (client *krakenClient) GetSymbolPrice(symbol string) (*model.SymbolPrice, e
 		percentChange24h = (lastPrice - price24hAgo) / price24hAgo * 100
 	}
 
-	return &model.SymbolPrice{
+	return &SymbolPrice{
 		Symbol:           symbol,
 		Price:            lastPriceV.String(),
 		UpdateAt:         time.Now(),

@@ -10,8 +10,6 @@ import (
 	"strings"
 	"time"
 
-	"github.com/polyrabbit/my-token/exchange/model"
-
 	"github.com/polyrabbit/my-token/http"
 	"github.com/sirupsen/logrus"
 )
@@ -119,7 +117,7 @@ func (client *bittrexClient) GetPriceRightAfter(klineResp *bittrexKlineResponse,
 	return 0, fmt.Errorf("no time found right after %v", after)
 }
 
-func (client *bittrexClient) GetSymbolPrice(symbol string) (*model.SymbolPrice, error) {
+func (client *bittrexClient) GetSymbolPrice(symbol string) (*SymbolPrice, error) {
 	respBytes, err := client.Get(bittrexBaseApi+"/public/getticker", http.WithQuery(map[string]string{"market": strings.ToUpper(symbol)}))
 	if err != nil {
 		return nil, err
@@ -158,7 +156,7 @@ func (client *bittrexClient) GetSymbolPrice(symbol string) (*model.SymbolPrice, 
 		}
 	}
 
-	return &model.SymbolPrice{
+	return &SymbolPrice{
 		Symbol:           symbol,
 		Price:            strconv.FormatFloat(respJSON.Result.Last, 'f', -1, 64),
 		UpdateAt:         time.Now(),

@@ -1,4 +1,4 @@
-# My Token
+# MyToken
 
 [![Build Status](https://travis-ci.org/polyrabbit/my-token.svg?branch=master)](https://travis-ci.org/polyrabbit/my-token)
 [![codecov](https://codecov.io/gh/polyrabbit/my-token/branch/master/graph/badge.svg)](https://codecov.io/gh/polyrabbit/my-token)

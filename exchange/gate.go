@@ -9,8 +9,6 @@ import (
 	"strings"
 	"time"
 
-	"github.com/polyrabbit/my-token/exchange/model"
-
 	"github.com/polyrabbit/my-token/http"
 	"github.com/sirupsen/logrus"
 )
@@ -100,7 +98,7 @@ func (client *gateClient) GetKlinePrice(symbol string, groupedSeconds int, size 
 	return strconv.ParseFloat(respJSON.Data[0][5], 64)
 }
 
-func (client *gateClient) GetSymbolPrice(symbol string) (*model.SymbolPrice, error) {
+func (client *gateClient) GetSymbolPrice(symbol string) (*SymbolPrice, error) {
 	respBytes, err := client.Get(gateBaseApi + "ticker/" + symbol)
 	if err != nil {
 		return nil, err
@@ -127,7 +125,7 @@ func (client *gateClient) GetSymbolPrice(symbol string) (*model.SymbolPrice, err
 		percentChange24h = (respJSON.Last - price24hAgo) / price24hAgo * 100
 	}
 
-	return &model.SymbolPrice{
+	return &SymbolPrice{
 		Symbol:           symbol,
 		Price:            strconv.FormatFloat(respJSON.Last, 'f', -1, 64),
 		UpdateAt:         time.Now(),

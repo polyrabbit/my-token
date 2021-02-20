@@ -6,18 +6,15 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/polyrabbit/my-token/exchange/model"
-
 	"github.com/polyrabbit/my-token/http"
 )
 
 // https://coinmarketcap.com/api/
-const coinmarketcapBaseApi = "https://api.coinmarketcap.com/v1/ticker/"
+const coinmarketcapBaseApi = "https://pro-api.coinmarketcap.com"
 
 type coinMarketCapClient struct {
 	*http.Client
-	AccessKey string
-	SecretKey string
+	APIKey string
 }
 
 type coinMarketCapToken struct {
@@ -54,7 +51,7 @@ func (client *coinMarketCapClient) Init() {
 	// TODO: coinmarketcap needs api key now, init it here.
 }
 
-func (client *coinMarketCapClient) GetSymbolPrice(symbol string) (*model.SymbolPrice, error) {
+func (client *coinMarketCapClient) GetSymbolPrice(symbol string) (*SymbolPrice, error) {
 	respBytes, err := client.Get(coinmarketcapBaseApi + symbol + "/")
 	if err != nil {
 		if herr, ok := err.(*http.ResponseError); ok {
@@ -77,7 +74,7 @@ func (client *coinMarketCapClient) GetSymbolPrice(symbol string) (*model.SymbolP
 	}
 	token := tokens[0]
 
-	return &model.SymbolPrice{
+	return &SymbolPrice{
 		Symbol:           token.Symbol,
 		Price:            token.PriceUSD,
 		Source:           client.GetName(),

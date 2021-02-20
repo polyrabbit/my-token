@@ -8,8 +8,6 @@ import (
 	"strings"
 	"time"
 
-	"github.com/polyrabbit/my-token/exchange/model"
-
 	"github.com/polyrabbit/my-token/http"
 	"github.com/sirupsen/logrus"
 )
@@ -113,7 +111,7 @@ func (client *huobiClient) GetKlinePrice(symbol, period string, size int) (float
 	return open, nil
 }
 
-func (client *huobiClient) GetSymbolPrice(symbol string) (*model.SymbolPrice, error) {
+func (client *huobiClient) GetSymbolPrice(symbol string) (*SymbolPrice, error) {
 	respByte, err := client.Get(huobiBaseApi+"/market/trade", http.WithQuery(map[string]string{"symbol": strings.ToLower(symbol)}))
 	if err != nil {
 		return nil, err
@@ -142,7 +140,7 @@ func (client *huobiClient) GetSymbolPrice(symbol string) (*model.SymbolPrice, er
 		percentChange24h = (ticker.Price - price24hAgo) / price24hAgo * 100
 	}
 
-	return &model.SymbolPrice{
+	return &SymbolPrice{
 		Symbol:           symbol,
 		Price:            strconv.FormatFloat(ticker.Price, 'f', -1, 64),
 		UpdateAt:         time.Unix(ticker.Ts/1000, 0),

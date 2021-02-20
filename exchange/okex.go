@@ -7,8 +7,6 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/polyrabbit/my-token/exchange/model"
-
 	"github.com/polyrabbit/my-token/http"
 	"github.com/sirupsen/logrus"
 	"github.com/tidwall/gjson"
@@ -61,7 +59,7 @@ func (client *okexClient) GetKlinePrice(symbol, granularity string, start, end t
 	return lastKline.Get("1").Float(), nil
 }
 
-func (client *okexClient) GetSymbolPrice(symbol string) (*model.SymbolPrice, error) {
+func (client *okexClient) GetSymbolPrice(symbol string) (*SymbolPrice, error) {
 	respByte, err := client.Get(okexBaseApi + symbol + "/ticker")
 	if err := client.extractError(respByte); err != nil {
 		// Extract more readable first if have
@@ -99,7 +97,7 @@ func (client *okexClient) GetSymbolPrice(symbol string) (*model.SymbolPrice, err
 		percentChange24h = (lastPrice - price24hAgo) / price24hAgo * 100
 	}
 
-	return &model.SymbolPrice{
+	return &SymbolPrice{
 		Symbol:           symbol,
 		Price:            strconv.FormatFloat(lastPrice, 'f', -1, 64),
 		UpdateAt:         updateAt,

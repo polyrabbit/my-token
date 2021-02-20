@@ -6,18 +6,18 @@ import (
 	"net/url"
 	"time"
 
+	"github.com/polyrabbit/my-token/config"
 	"github.com/sirupsen/logrus"
-	"github.com/spf13/viper"
 )
 
 type Client struct {
 	StdClient *http.Client
 }
 
-func New() *Client {
+func New(cfg *config.Config) *Client {
 	// Thread safe
 	stdClient := http.DefaultClient
-	timeout := viper.GetInt("timeout")
+	timeout := cfg.Timeout
 	if timeout != 0 {
 		logrus.Debugf("HTTP request timeout is set to %d seconds", timeout)
 		stdClient = &http.Client{
@@ -25,7 +25,7 @@ func New() *Client {
 		}
 	}
 
-	rawProxyURL := viper.GetString("proxy")
+	rawProxyURL := cfg.Proxy
 	if rawProxyURL != "" {
 		proxyURL, err := url.Parse(rawProxyURL)
 		if err != nil {
@@ -100,6 +100,7 @@ func WithHeader(header map[string]string) RequestOption {
 
 var defaultRequestOptions = RequestOptions{
 	header: map[string]string{
+		"Accept":        "application/json",
 		"User-Agent":    "Mozilla/5.0 (compatible; my-token; +https://github.com/polyrabbit/my-token)",
 		"Cache-Control": "no-store, no-cache, private",
 	},

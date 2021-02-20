@@ -7,14 +7,14 @@ import (
 	"strings"
 	"time"
 
-	"github.com/polyrabbit/my-token/exchange/model"
+	"github.com/polyrabbit/my-token/config"
 	"github.com/polyrabbit/my-token/http"
 	"github.com/sirupsen/logrus"
 )
 
 type ExchangeClient interface {
 	GetName() string
-	GetSymbolPrice(string) (*model.SymbolPrice, error)
+	GetSymbolPrice(string) (*SymbolPrice, error)
 }
 
 type ExchangeClientProvider func(*http.Client) ExchangeClient
@@ -49,9 +49,9 @@ func (r *Registry) GetAllNames() []string {
 	return r.officialNames
 }
 
-func (r *Registry) GetSymbolPrices(priceQueries []*model.PriceQuery) []*model.SymbolPrice {
+func (r *Registry) GetSymbolPrices(priceQueries []config.PriceQuery) []*SymbolPrice {
 	// Loop all priceQueries from config
-	waitingChanList := make([]chan *model.SymbolPrice, 0, len(priceQueries))
+	waitingChanList := make([]chan *SymbolPrice, 0, len(priceQueries))
 	for _, query := range priceQueries {
 		client := r.getClient(query.Name)
 		if client == nil {
@@ -62,7 +62,7 @@ func (r *Registry) GetSymbolPrices(priceQueries []*model.PriceQuery) []*model.Sy
 		waitingChanList = append(waitingChanList, pendings...)
 	}
 
-	symbolPriceList := make([]*model.SymbolPrice, 0, len(waitingChanList))
+	symbolPriceList := make([]*SymbolPrice, 0, len(waitingChanList))
 	for _, doneCh := range waitingChanList {
 		sp := <-doneCh
 		if sp != nil {
@@ -82,11 +82,11 @@ func (r *Registry) getClient(exchangeName string) ExchangeClient {
 }
 
 // Return a slice of waiting chans, each of them represents a pending request
-func (r *Registry) getPricesAsync(client ExchangeClient, symbols []string) []chan *model.SymbolPrice {
+func (r *Registry) getPricesAsync(client ExchangeClient, symbols []string) []chan *SymbolPrice {
 	// Use slice to hold the waiting chans in order to keep requested order
-	waitingChans := make([]chan *model.SymbolPrice, 0, len(symbols))
+	waitingChans := make([]chan *SymbolPrice, 0, len(symbols))
 	for _, symbol := range symbols {
-		doneCh := make(chan *model.SymbolPrice, 1)
+		doneCh := make(chan *SymbolPrice, 1)
 		waitingChans = append(waitingChans, doneCh)
 		go func(symbol string) {
 			start := time.Now()

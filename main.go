@@ -42,31 +42,29 @@ func checkForUpdate(httpClient *http.Client) {
 }
 
 func main() {
-	config.Parse()
-	httpClient := http.New()
+	cfg := config.Parse()
+	httpClient := http.New(cfg)
 	registry := exchange.NewRegistry(httpClient)
 	if viper.GetBool("list-exchanges") {
 		config.ListExchangesAndExit(registry.GetAllNames())
 	}
 	go checkForUpdate(httpClient)
 
-	refreshInterval := viper.GetInt("refresh")
-	if refreshInterval != 0 {
-		logrus.Infof("Auto refresh on every %d seconds", refreshInterval)
+	if cfg.Refresh != 0 {
+		logrus.Infof("Auto refresh on every %d seconds", cfg.Refresh)
 	}
 
-	var tableWriter = writer.NewTableWriter()
+	tableWriter := writer.NewTableWriter(cfg)
 	logrus.SetOutput(tableWriter)
 	defer logrus.SetOutput(colorable.NewColorableStderr())
 
-	queries := config.MustParsePriceQueries()
 	for {
-		symbolPriceList := registry.GetSymbolPrices(queries)
+		symbolPriceList := registry.GetSymbolPrices(cfg.Queries)
 		tableWriter.Render(symbolPriceList)
-		if refreshInterval == 0 {
+		if cfg.Refresh == 0 {
 			break
 		}
 		// Use sleep here so I can stall as much as I can to avoid exceeding API limit
-		time.Sleep(time.Duration(refreshInterval) * time.Second)
+		time.Sleep(time.Duration(cfg.Refresh) * time.Second)
 	}
 }

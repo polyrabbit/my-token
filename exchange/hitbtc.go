@@ -8,8 +8,6 @@ import (
 	"strings"
 	"time"
 
-	"github.com/polyrabbit/my-token/exchange/model"
-
 	"github.com/polyrabbit/my-token/http"
 	"github.com/sirupsen/logrus"
 )
@@ -97,7 +95,7 @@ func (client *hitBtcClient) GetKlinePrice(symbol, period string, limit int) (flo
 	return respJSON[0].Open, nil
 }
 
-func (client *hitBtcClient) GetSymbolPrice(symbol string) (*model.SymbolPrice, error) {
+func (client *hitBtcClient) GetSymbolPrice(symbol string) (*SymbolPrice, error) {
 	respBytes, err := client.Get(hitBtcBaseApi + "public/ticker/" + strings.ToUpper(symbol))
 	if err != nil {
 		return nil, err
@@ -127,7 +125,7 @@ func (client *hitBtcClient) GetSymbolPrice(symbol string) (*model.SymbolPrice, e
 	price24hAgo := respJSON.Open
 	percentChange24h = (respJSON.Last - price24hAgo) / price24hAgo * 100
 
-	return &model.SymbolPrice{
+	return &SymbolPrice{
 		Symbol:           symbol,
 		Price:            strconv.FormatFloat(respJSON.Last, 'f', -1, 64),
 		UpdateAt:         updated,

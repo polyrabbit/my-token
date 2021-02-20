@@ -8,8 +8,6 @@ import (
 	"strings"
 	"time"
 
-	"github.com/polyrabbit/my-token/exchange/model"
-
 	"github.com/polyrabbit/my-token/http"
 	"github.com/sirupsen/logrus"
 )
@@ -89,7 +87,7 @@ func (client *poloniexClient) lookupSymbol(symbol string, tickers map[string]pol
 	return nil
 }
 
-func (client *poloniexClient) GetSymbolPrice(symbol string) (*model.SymbolPrice, error) {
+func (client *poloniexClient) GetSymbolPrice(symbol string) (*SymbolPrice, error) {
 	respBytes, err := client.Get(poloniexBaseApi+"public", http.WithQuery(map[string]string{"command": "returnTicker"}))
 	if err != nil {
 		return nil, err
@@ -115,7 +113,7 @@ func (client *poloniexClient) GetSymbolPrice(symbol string) (*model.SymbolPrice,
 		percentChange1h = (symbolTicker.Last - price1hAgo) / price1hAgo * 100
 	}
 
-	return &model.SymbolPrice{
+	return &SymbolPrice{
 		Symbol:           symbol,
 		Price:            strconv.FormatFloat(symbolTicker.Last, 'f', -1, 64),
 		UpdateAt:         time.Now(),

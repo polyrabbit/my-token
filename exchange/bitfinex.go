@@ -9,8 +9,6 @@ import (
 	"strings"
 	"time"
 
-	"github.com/polyrabbit/my-token/exchange/model"
-
 	"github.com/polyrabbit/my-token/http"
 	"github.com/sirupsen/logrus"
 )
@@ -72,7 +70,7 @@ func (client *bitfinixClient) GetKlinePrice(symbol, frame string, start time.Tim
 	return klineResp[0][1], nil
 }
 
-func (client *bitfinixClient) GetSymbolPrice(symbol string) (*model.SymbolPrice, error) {
+func (client *bitfinixClient) GetSymbolPrice(symbol string) (*SymbolPrice, error) {
 	symbol = strings.ToUpper(symbol)
 	respBytes, err := client.Get(bitfinixBaseApi + "ticker/t" + symbol)
 	if err != nil {
@@ -111,7 +109,7 @@ func (client *bitfinixClient) GetSymbolPrice(symbol string) (*model.SymbolPrice,
 		percentChange24h = (currentPrice - lastDayPrice) / lastDayPrice * 100
 	}
 
-	return &model.SymbolPrice{
+	return &SymbolPrice{
 		Symbol:           strings.ToUpper(symbol),
 		Price:            strconv.FormatFloat(currentPrice, 'f', -1, 64),
 		Source:           client.GetName(),
