@@ -1,7 +1,8 @@
 language: go
 
 go:
-  - stable
+#  - stable
+  - 1.15.x
 
 env:
   - GO111MODULE=on
