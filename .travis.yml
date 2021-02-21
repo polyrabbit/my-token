@@ -26,7 +26,7 @@ before_deploy:
   - go get -u github.com/mitchellh/gox
   - go get -u github.com/tcnksm/ghr
 
-  - gox -output "release/mt_{{.OS}}_{{.Arch}}/mt" -ldflags "-X github.com/polyrabbit/my-token/config.Rev=`git rev-parse --short HEAD` -X github.com/polyrabbit/my-token/config.Version=`git describe --tags | cut -dv -f 2` -X 'github.com/polyrabbit/my-token/config.exampleConfig=`cat my_token.example.yaml`'" -verbose
+  - gox -output "release/mt_{{.OS}}_{{.Arch}}/mt" -osarch '!darwin/386' -ldflags "-X github.com/polyrabbit/my-token/config.Rev=`git rev-parse --short HEAD` -X github.com/polyrabbit/my-token/config.Version=`git describe --tags | cut -dv -f 2` -X 'github.com/polyrabbit/my-token/config.exampleConfig=`cat my_token.example.yaml`'" -verbose
   - mkdir -p dist
   - for f in release/*; do
       if [[ -d "$f" ]]; then
