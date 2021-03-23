@@ -28,11 +28,12 @@ func Register(p ExchangeClientProvider) {
 type Registry struct {
 	clients       map[string]ExchangeClient
 	officialNames []string
+	hasProxy      bool
 }
 
 func NewRegistry(cfg *config.Config, httpClient *http.Client) *Registry {
 	exchangeMap := cfg.GroupQueryByExchange()
-	r := &Registry{clients: make(map[string]ExchangeClient)}
+	r := &Registry{clients: make(map[string]ExchangeClient), hasProxy: cfg.Proxy != ""}
 	for _, p := range providers {
 		eClient := p(exchangeMap, httpClient)
 		r.officialNames = append(r.officialNames, eClient.GetName())
@@ -100,7 +101,7 @@ func (r *Registry) getPricesAsync(client ExchangeClient, symbols []string) []cha
 					logEntry = logEntry.WithField("elapsed", elapsed.String())
 				}
 				logEntry.Warnf("Failed to get symbol price for %s from %s", symbol, client.GetName())
-				if ok && e.Timeout() {
+				if r.hasProxy && ok && e.Timeout() {
 					logrus.Info("Maybe you are blocked by a firewall, try using --proxy to go through a proxy?")
 				}
 				close(doneCh) // close channel to indicate an error has happened, any other good idea?
