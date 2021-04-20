@@ -68,6 +68,9 @@ func (client *binanceClient) GetPrice1hAgo(symbol string) (float64, error) {
 	if err := json.Unmarshal(respBytes, &klines); err != nil {
 		return 0, err
 	}
+	if len(klines) == 0 {
+		return 0, errors.New("got an empty kline")
+	}
 	if s, ok := klines[0][1].(string); ok {
 		p, err := strconv.ParseFloat(s, 64)
 		if err != nil {
