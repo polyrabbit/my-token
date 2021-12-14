@@ -151,10 +151,10 @@ func ListExchangesAndExit(exchanges []string) {
 }
 
 // CLI format exchange.token.<api_key> - api_key is optional
-func parseQueryFromCLI(cliArgs []string) []PriceQuery {
+func parseQueryFromCLI(cliArgs []string) []*PriceQuery {
 	var (
-		lastExchangeDef PriceQuery
-		exchangeList    []PriceQuery
+		lastExchangeDef = &PriceQuery{}
+		exchangeList    []*PriceQuery
 	)
 	for _, arg := range cliArgs {
 		tokenDef := strings.SplitN(arg, ".", -1)
@@ -166,7 +166,7 @@ func parseQueryFromCLI(cliArgs []string) []PriceQuery {
 			// Do not sort/reorder here, to remain the order user specified
 			lastExchangeDef.Tokens = append(lastExchangeDef.Tokens, tokenDef[1])
 		} else {
-			exchangeDef := PriceQuery{
+			exchangeDef := &PriceQuery{
 				Name:   tokenDef[0],
 				Tokens: []string{tokenDef[1]},
 			}
