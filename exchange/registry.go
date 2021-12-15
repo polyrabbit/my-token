@@ -51,7 +51,7 @@ func (r *Registry) GetAllNames() []string {
 	return r.officialNames
 }
 
-func (r *Registry) GetSymbolPrices(priceQueries []config.PriceQuery) []*SymbolPrice {
+func (r *Registry) GetSymbolPrices(priceQueries []*config.PriceQuery) []*SymbolPrice {
 	// Loop all priceQueries from config
 	waitingChanList := make([]chan *SymbolPrice, 0, len(priceQueries))
 	for _, query := range priceQueries {
