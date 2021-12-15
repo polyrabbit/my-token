@@ -17,7 +17,7 @@ type ExchangeClient interface {
 	GetSymbolPrice(string) (*SymbolPrice, error)
 }
 
-type ExchangeClientProvider func(queries map[string]config.PriceQuery, httpClient *http.Client) ExchangeClient
+type ExchangeClientProvider func(queries map[string]*config.PriceQuery, httpClient *http.Client) ExchangeClient
 
 var providers []ExchangeClientProvider
 

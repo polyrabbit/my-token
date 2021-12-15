@@ -20,7 +20,7 @@ type okexClient struct {
 	*http.Client
 }
 
-func NewOKexClient(queries map[string]config.PriceQuery, httpClient *http.Client) ExchangeClient {
+func NewOKexClient(queries map[string]*config.PriceQuery, httpClient *http.Client) ExchangeClient {
 	return &okexClient{Client: httpClient}
 }
 

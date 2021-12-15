@@ -53,7 +53,7 @@ type zbCommonResponseProvider interface {
 	getCommonResponse() zbCommonResponse
 }
 
-func NewZBClient(queries map[string]config.PriceQuery, httpClient *http.Client) ExchangeClient {
+func NewZBClient(queries map[string]*config.PriceQuery, httpClient *http.Client) ExchangeClient {
 	return &zbClient{Client: httpClient}
 }
 

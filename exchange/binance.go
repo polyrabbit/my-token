@@ -43,7 +43,7 @@ type binance24hStatistics struct {
 	CloseTime          int64
 }
 
-func NewBinanceClient(queries map[string]config.PriceQuery, httpClient *http.Client) ExchangeClient {
+func NewBinanceClient(queries map[string]*config.PriceQuery, httpClient *http.Client) ExchangeClient {
 	return &binanceClient{Client: httpClient}
 }
 

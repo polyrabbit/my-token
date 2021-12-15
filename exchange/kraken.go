@@ -21,7 +21,7 @@ type krakenClient struct {
 	*http.Client
 }
 
-func NewKrakenClient(queries map[string]config.PriceQuery, httpClient *http.Client) ExchangeClient {
+func NewKrakenClient(queries map[string]*config.PriceQuery, httpClient *http.Client) ExchangeClient {
 	return &krakenClient{Client: httpClient}
 }
 

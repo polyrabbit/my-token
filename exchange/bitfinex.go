@@ -21,7 +21,7 @@ type bitfinixClient struct {
 	*http.Client
 }
 
-func NewBitfinixClient(queries map[string]config.PriceQuery, httpClient *http.Client) ExchangeClient {
+func NewBitfinixClient(queries map[string]*config.PriceQuery, httpClient *http.Client) ExchangeClient {
 	return &bitfinixClient{Client: httpClient}
 }
 

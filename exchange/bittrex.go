@@ -25,7 +25,7 @@ type bittrexClient struct {
 	*http.Client
 }
 
-func NewBittrexClient(queries map[string]config.PriceQuery, httpClient *http.Client) ExchangeClient {
+func NewBittrexClient(queries map[string]*config.PriceQuery, httpClient *http.Client) ExchangeClient {
 	return &bittrexClient{Client: httpClient}
 }
 

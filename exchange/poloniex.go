@@ -36,7 +36,7 @@ type poloniexKline struct {
 	Open float64
 }
 
-func NewPoloniexClient(queries map[string]config.PriceQuery, httpClient *http.Client) ExchangeClient {
+func NewPoloniexClient(queries map[string]*config.PriceQuery, httpClient *http.Client) ExchangeClient {
 	return &poloniexClient{Client: httpClient}
 }
 

@@ -62,7 +62,7 @@ type huobiCommonResponseProvider interface {
 	getCommonResponse() huobiCommonResponse
 }
 
-func NewHuobiClient(queries map[string]config.PriceQuery, httpClient *http.Client) ExchangeClient {
+func NewHuobiClient(queries map[string]*config.PriceQuery, httpClient *http.Client) ExchangeClient {
 	return &huobiClient{Client: httpClient}
 }
 

@@ -70,7 +70,7 @@ type coinMarketCapClient struct {
 //     }
 // }
 
-func NewCoinMarketCapClient(queries map[string]config.PriceQuery, httpClient *http.Client) ExchangeClient {
+func NewCoinMarketCapClient(queries map[string]*config.PriceQuery, httpClient *http.Client) ExchangeClient {
 	c := &coinMarketCapClient{Client: httpClient}
 	if query, ok := queries[strings.ToUpper(c.GetName())]; ok { // If user queries CoinMarketCap, then API key is required
 		c.APIKey = query.APIKey

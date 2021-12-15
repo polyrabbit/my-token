@@ -56,7 +56,7 @@ type hitBtcCommonResponseProvider interface {
 	getCommonResponse() hitBtcCommonResponse
 }
 
-func NewHitBtcClient(queries map[string]config.PriceQuery, httpClient *http.Client) ExchangeClient {
+func NewHitBtcClient(queries map[string]*config.PriceQuery, httpClient *http.Client) ExchangeClient {
 	return &hitBtcClient{Client: httpClient}
 }
 

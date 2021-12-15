@@ -48,7 +48,7 @@ type bigOneMarketResponse struct {
 	}
 }
 
-func NewBigOneClient(queries map[string]config.PriceQuery, httpClient *http.Client) ExchangeClient {
+func NewBigOneClient(queries map[string]*config.PriceQuery, httpClient *http.Client) ExchangeClient {
 	return &bigOneClient{Client: httpClient}
 }
 

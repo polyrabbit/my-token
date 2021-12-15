@@ -49,7 +49,7 @@ type gateCommonResponseProvider interface {
 	getCommonResponse() gateCommonResponse
 }
 
-func NewGateClient(queries map[string]config.PriceQuery, httpClient *http.Client) ExchangeClient {
+func NewGateClient(queries map[string]*config.PriceQuery, httpClient *http.Client) ExchangeClient {
 	return &gateClient{Client: httpClient}
 }
 

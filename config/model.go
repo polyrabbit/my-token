@@ -30,10 +30,10 @@ type Config struct {
 	Queries []*PriceQuery `mapstructure:"exchanges"`
 }
 
-func (c *Config) GroupQueryByExchange() map[string]PriceQuery {
-	exchangeMap := make(map[string]PriceQuery, len(c.Queries))
+func (c *Config) GroupQueryByExchange() map[string]*PriceQuery {
+	exchangeMap := make(map[string]*PriceQuery, len(c.Queries))
 	for _, query := range c.Queries {
-		exchangeMap[strings.ToUpper(query.Name)] = *query
+		exchangeMap[strings.ToUpper(query.Name)] = query
 	}
 	return exchangeMap
 }

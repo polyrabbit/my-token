@@ -17,7 +17,7 @@ type coinbaseClient struct {
 	coinbasepro *coinbasepro.Client
 }
 
-func NewCoinBaseClient(queries map[string]config.PriceQuery, httpClient *http.Client) ExchangeClient {
+func NewCoinBaseClient(queries map[string]*config.PriceQuery, httpClient *http.Client) ExchangeClient {
 	client := coinbasepro.NewClient()
 	client.HTTPClient = httpClient.StdClient
 	return &coinbaseClient{coinbasepro: client}
