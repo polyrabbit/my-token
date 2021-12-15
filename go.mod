@@ -5,8 +5,7 @@ go 1.12
 require (
 	github.com/fatih/color v1.7.0
 	github.com/gosuri/uilive v0.0.4
-	github.com/mattn/go-colorable v0.0.9
-	github.com/mattn/go-isatty v0.0.12 // indirect
+	github.com/mattn/go-colorable v0.1.12
 	github.com/mattn/go-runewidth v0.0.8 // indirect
 	github.com/olekukonko/tablewriter v0.0.0-20180506121414-d4647c9c7a84
 	github.com/preichenberger/go-coinbasepro/v2 v2.0.5
