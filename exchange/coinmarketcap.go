@@ -1,21 +1,21 @@
 package exchange
 
 import (
-	"errors"
-	"fmt"
-	"strings"
+    "errors"
+    "fmt"
+    "strings"
 
-	"github.com/polyrabbit/my-token/config"
-	"github.com/polyrabbit/my-token/http"
-	"github.com/tidwall/gjson"
+    "github.com/polyrabbit/my-token/config"
+    "github.com/polyrabbit/my-token/http"
+    "github.com/tidwall/gjson"
 )
 
 // https://coinmarketcap.com/api/documentation/v1/#operation/getV1CryptocurrencyQuotesLatest
 const coinmarketcapBaseApi = "https://pro-api.coinmarketcap.com"
 
 type coinMarketCapClient struct {
-	*http.Client
-	APIKey string
+    *http.Client
+    APIKey string
 }
 
 // An example 200 response
@@ -71,57 +71,57 @@ type coinMarketCapClient struct {
 // }
 
 func NewCoinMarketCapClient(queries map[string]*config.PriceQuery, httpClient *http.Client) ExchangeClient {
-	c := &coinMarketCapClient{Client: httpClient}
-	if query, ok := queries[strings.ToUpper(c.GetName())]; ok { // If user queries CoinMarketCap, then API key is required
-		c.APIKey = query.APIKey
-		if c.APIKey == "" {
-			panic(fmt.Errorf("%s now requires API key, get one from https://coinmarketcap.com/api/", c.GetName()))
-		}
-	}
-	return c
+    c := &coinMarketCapClient{Client: httpClient}
+    if query, ok := queries[strings.ToUpper(c.GetName())]; ok { // If user queries CoinMarketCap, then API key is required
+        c.APIKey = query.APIKey
+        if c.APIKey == "" {
+            panic(fmt.Errorf("%s now requires API key, get one from https://coinmarketcap.com/api/", c.GetName()))
+        }
+    }
+    return c
 }
 
 func (client *coinMarketCapClient) GetName() string {
-	return "CoinMarketCap"
+    return "CoinMarketCap"
 }
 
 func (client *coinMarketCapClient) HTTPHeader() map[string]string {
-	return map[string]string{
-		"X-CMC_PRO_API_KEY": client.APIKey,
-	}
+    return map[string]string{
+        "X-CMC_PRO_API_KEY": client.APIKey,
+    }
 }
 
 func (client *coinMarketCapClient) GetSymbolPrice(symbol string) (*SymbolPrice, error) {
-	respBytes, err := client.Get(coinmarketcapBaseApi+"/v1/cryptocurrency/quotes/latest",
-		http.WithQuery(map[string]string{"symbol": strings.ToUpper(symbol)}),
-		http.WithHeader(client.HTTPHeader()))
-	// If there is a more specific error
-	if errMsg := gjson.GetBytes(respBytes, "status.error_message"); errMsg.String() != "" {
-		return nil, errors.New(errMsg.String())
-	}
-	// Then throws a generic one
-	if err != nil {
-		return nil, err
-	}
+    respBytes, err := client.Get(coinmarketcapBaseApi+"/v1/cryptocurrency/quotes/latest",
+        http.WithQuery(map[string]string{"symbol": strings.ToUpper(symbol)}),
+        http.WithHeader(client.HTTPHeader()))
+    // If there is a more specific error
+    if errMsg := gjson.GetBytes(respBytes, "status.error_message"); errMsg.String() != "" {
+        return nil, errors.New(errMsg.String())
+    }
+    // Then throws a generic one
+    if err != nil {
+        return nil, err
+    }
 
-	symbolInfo := gjson.GetBytes(respBytes, fmt.Sprintf("data.%s", strings.ToUpper(symbol)))
-	if !symbolInfo.Exists() {
-		return nil, fmt.Errorf("no symbol %q found in returned map", symbol)
-	}
-	usdQuote := gjson.GetBytes([]byte(symbolInfo.Raw), "quote.USD")
-	if !usdQuote.Exists() {
-		return nil, fmt.Errorf("quote.USD not found in %q", symbol)
-	}
+    symbolInfo := gjson.GetBytes(respBytes, fmt.Sprintf("data.%s", strings.ToUpper(symbol)))
+    if !symbolInfo.Exists() {
+        return nil, fmt.Errorf("no symbol %q found in returned map", symbol)
+    }
+    usdQuote := gjson.GetBytes([]byte(symbolInfo.Raw), "quote.USD")
+    if !usdQuote.Exists() {
+        return nil, fmt.Errorf("quote.USD not found in %q", symbol)
+    }
 
-	return &SymbolPrice{
-		Symbol:           symbolInfo.Get("symbol").String(),
-		Price:            usdQuote.Get("price").String(),
-		Source:           client.GetName(),
-		UpdateAt:         usdQuote.Get("last_updated").Time(),
-		PercentChange1h:  usdQuote.Get("percent_change_1h").Float(),
-		PercentChange24h: usdQuote.Get("percent_change_24h").Float()}, nil
+    return &SymbolPrice{
+        Symbol:           symbolInfo.Get("symbol").String(),
+        Price:            usdQuote.Get("price").String(),
+        Source:           client.GetName(),
+        UpdateAt:         usdQuote.Get("last_updated").Time(),
+        PercentChange1h:  usdQuote.Get("percent_change_1h").Float(),
+        PercentChange24h: usdQuote.Get("percent_change_24h").Float()}, nil
 }
 
 func init() {
-	Register(NewCoinMarketCapClient)
+    Register(NewCoinMarketCapClient)
 }

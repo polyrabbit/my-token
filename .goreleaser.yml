@@ -1,0 +1,48 @@
+project_name: MyToken
+release:
+  github:
+    owner: polyrabbit
+    name: my-token
+
+  mode: replace
+
+builds:
+  - id: "mt-build"
+    binary: mt
+    flags:
+      - -v
+
+    ldflags:
+      - -X github.com/polyrabbit/my-token/config.Rev={{.ShortCommit}} -X github.com/polyrabbit/my-token/config.Version={{.Version}} -X github.com/polyrabbit/my-token/config.Date={{.Date}}
+
+    # GOOS list to build for.
+    # For more info refer to: https://golang.org/doc/install/source#environment
+    # Defaults are darwin and linux.
+    goos:
+      - linux
+      - darwin
+      - windows
+
+    # List of combinations of GOOS + GOARCH + GOARM to ignore.
+    # Default is empty.
+    ignore:
+      - goos: darwin
+        goarch: 386
+      - goos: linux
+        goarch: arm
+        goarm: 7
+      - goarm: mips64
+        gomips: hardfloat
+
+checksum:
+  name_template: 'checksums.txt'
+
+changelog:
+  sort: asc
+  filters:
+    exclude:
+      - '^docs:'
+      - '^tests:'
+
+archives:
+  - name_template: "mt_{{ .Version }}_{{ .Os }}_{{ .Arch }}"
