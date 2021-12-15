@@ -146,8 +146,8 @@ github.com/pkg/errors v0.8.1/go.mod h1:bwawxfHBFNV+L2hUp1rHADufV3IMtnDRdf1r5NINE
 github.com/pmezard/go-difflib v1.0.0 h1:4DBwDE0NGyQoBHbLQYPwSUPoCMWR5BEzIk/f1lZbAQM=
 github.com/pmezard/go-difflib v1.0.0/go.mod h1:iKH77koFhYxTK1pcRnkKkqfTogsbg7gZNVY4sRDYZ/4=
 github.com/posener/complete v1.1.1/go.mod h1:em0nMJCgc9GFtwrmVmEMR/ZL6WyhyjMBndrE9hABlRI=
-github.com/preichenberger/go-coinbasepro/v2 v2.0.5 h1:Mf1k3vZTuLzuzcmCJBIbT8eiRD+N2uEG2C6Ug3upXiA=
-github.com/preichenberger/go-coinbasepro/v2 v2.0.5/go.mod h1:tsiN/OFQ5FiE+T2i3r88GHDVvR/Jxkx+CGKw7JSYLrE=
+github.com/preichenberger/go-coinbasepro/v2 v2.1.0 h1:TOJ6zMtlN3KE/Qa0NgI6U6H5FyUNqLfMrVSq/J4Iitk=
+github.com/preichenberger/go-coinbasepro/v2 v2.1.0/go.mod h1:tsiN/OFQ5FiE+T2i3r88GHDVvR/Jxkx+CGKw7JSYLrE=
 github.com/prometheus/client_golang v0.9.1/go.mod h1:7SWBe2y4D6OKWSNQJUaRYU/AaXPKyh/dDVn+NZz0KFw=
 github.com/prometheus/client_golang v0.9.3/go.mod h1:/TN21ttK/J9q6uSwhBd54HahCDft0ttaMvbicHlPoso=
 github.com/prometheus/client_model v0.0.0-20180712105110-5c3871d89910/go.mod h1:MbSGuTsp3dbXC40dX6PRTWyKYBIrTGTE9sqQNg2J8bo=
